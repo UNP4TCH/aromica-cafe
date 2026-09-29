@@ -1,12 +1,10 @@
-# Aromica Café — Official Digital Home (V3.1 Polish Pass)
+# Aromica Café — Official Digital Home 
 
 A unified, editorial single-page website for **Aromica Café** (near Boral High School, Kolkata).
 
-Built by synthesizing the **Lovable visual design language** (warm editorial typography, generous whitespace, organic shapes, restrained palette) with the **v0 functional UX** (live Kolkata opening status, interactive category & search menu with veg-only filter, responsive gallery with accessible lightbox, Google Maps integration, and mobile quick action bar).
-
 ---
 
-## 🎨 V3.1 Color System Tokens
+## 🎨Color System Tokens
 
 ```css
 --espresso: #241611;    /* Primary dark tone */
@@ -34,7 +32,7 @@ Built by synthesizing the **Lovable visual design language** (warm editorial typ
 
 ---
 
-## ✨ V3.1 Key Refinements
+## Key Refinements
 
 1. **Gallery Lightbox**:
    - Clicking any gallery item opens an accessible full-resolution viewer.
