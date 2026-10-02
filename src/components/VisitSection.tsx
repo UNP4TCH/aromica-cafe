@@ -1,5 +1,7 @@
-import { Clock, Compass, ExternalLink, MapPin, MessageCircle, Navigation, Phone } from "lucide-react";
+import { Clock, Compass, ExternalLink, Mail, MapPin, MessageCircle, Navigation, Phone, Sparkles } from "lucide-react";
 import { cafe, weeklySchedule } from "@/data/cafe";
+import { demoConfig } from "@/data/demoConfig";
+import { PhotoWatermark } from "@/components/PhotoWatermark";
 import { OpenStatusBadge } from "./OpenStatusBadge";
 import { useScrollReveal } from "@/lib/useScrollReveal";
 
@@ -18,10 +20,10 @@ export function VisitSection() {
             Plan Your Visit
           </p>
           <h2 id="visit-title" className="mt-3 font-display text-4xl text-primary sm:text-5xl lg:text-6xl">
-            Find Your Way to Aromica
+            Find Your Way to {cafe.name}
           </h2>
           <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-            Conveniently situated on Boral Main Road near Boral High School. Drop by for a relaxed evening cup, comfort snacks, or takeaways.
+            {cafe.visitDescription}
           </p>
         </div>
 
@@ -31,7 +33,7 @@ export function VisitSection() {
           <div className="flex flex-col gap-4 lg:col-span-7">
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-primary/20 bg-card shadow-paper sm:aspect-[16/10] lg:aspect-[16/11]">
               <iframe
-                title="Aromica Café Location Map on Boral Main Road"
+                title={`${cafe.name} Location Map`}
                 src={cafe.directions.embedSrc}
                 className="h-full w-full border-0"
                 loading="lazy"
@@ -86,13 +88,14 @@ export function VisitSection() {
               </div>
 
               {/* Real storefront photo for landmark recognition */}
-              <div className="group mt-5 overflow-hidden rounded-xl border border-coffee/15 bg-card shadow-xs">
+              <div className="group relative mt-5 overflow-hidden rounded-xl border border-coffee/15 bg-card shadow-xs">
                 <img
                   src="/images/aromica-exterior-night-01.webp"
                   alt="AROMICA Café storefront at night with illuminated signage on Boral Main Road"
                   className="aspect-[16/9] w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.02]"
                   loading="lazy"
                 />
+                <PhotoWatermark className="bottom-9 right-2.5" />
                 <p className="px-3.5 py-2 text-[11px] text-muted-foreground">
                   Storefront on Boral Main Road at night
                 </p>
@@ -111,7 +114,7 @@ export function VisitSection() {
               <div className="mt-5 border-t border-coffee/10 pt-4">
                 <p className="text-xs font-semibold text-coffee">Landmark guidance</p>
                 <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  Travel along Boral Main Road toward Usha Pally and Kamdahari. Look for Rajnarayan Park near Boral High School; the café is at premises C/9.
+                  {cafe.landmarkGuidance}
                 </p>
               </div>
             </div>
@@ -144,44 +147,135 @@ export function VisitSection() {
               </dl>
             </div>
 
-            {/* Direct Contact Links */}
-            <div className="grid gap-3 sm:grid-cols-2">
-              <a
-                href={cafe.phone.href}
-                className="flex items-center gap-3 rounded-xl border border-coffee/15 bg-card p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-coffee/30 hover:bg-cream-2/40 active:translate-y-0 active:scale-[0.98]"
-              >
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-coffee text-paper">
-                  <Phone className="size-4" />
-                </div>
-                <div>
-                  <span className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Call Directly
-                  </span>
-                  <span className="block text-xs font-semibold text-foreground">
-                    {cafe.phone.display}
+            {/* Direct Contact Links / Demo Contact Card */}
+            {demoConfig.enabled ? (
+              <div className="rounded-2xl border border-gold/30 bg-card p-5 sm:p-6 shadow-paper">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="size-4 text-caramel" />
+                  <span className="text-xs font-semibold uppercase tracking-wider text-caramel">
+                    Concept Inquiries
                   </span>
                 </div>
-              </a>
 
-              <a
-                href={cafe.whatsapp.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 rounded-xl border border-coffee/15 bg-card p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-coffee/30 hover:bg-cream-2/40 active:translate-y-0 active:scale-[0.98]"
-              >
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-wa text-white">
-                  <MessageCircle className="size-4" />
+                <h3 className="mt-2.5 font-display text-lg text-primary">
+                  Have a business that could use something like this?
+                </h3>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  Designed and developed by{" "}
+                  <strong className="font-semibold text-primary">{demoConfig.owner.name}</strong> as an interactive concept. Contact us to discuss a tailored web presence for your café or local business.
+                </p>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {/* Primary: Susmit Dey */}
+                  <div className="rounded-xl border border-coffee/15 bg-cream-2/40 p-3.5">
+                    <p className="text-xs font-semibold text-primary">
+                      {demoConfig.owner.name}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {demoConfig.owner.role}
+                    </p>
+                    <div className="mt-2.5 flex flex-col gap-1.5 text-xs">
+                      <a
+                        href={demoConfig.owner.phoneHref}
+                        className="inline-flex items-center gap-1.5 font-medium text-coffee transition-colors hover:text-caramel hover:underline"
+                      >
+                        <Phone className="size-3 text-caramel" />
+                        <span>{demoConfig.owner.phone}</span>
+                      </a>
+                      <a
+                        href={demoConfig.owner.whatsappHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 font-semibold text-wa hover:underline"
+                      >
+                        <MessageCircle className="size-3 text-wa" />
+                        <span>WhatsApp Chat</span>
+                      </a>
+                      <a
+                        href={demoConfig.owner.emailHref}
+                        className="inline-flex items-center gap-1.5 font-medium text-coffee transition-colors hover:text-caramel hover:underline"
+                      >
+                        <Mail className="size-3 text-caramel" />
+                        <span className="truncate">{demoConfig.owner.email}</span>
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Secondary: Tuhimrahamain */}
+                  <div className="rounded-xl border border-coffee/15 bg-cream-2/40 p-3.5">
+                    <p className="text-xs font-semibold text-primary">
+                      {demoConfig.secondaryContact.name}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {demoConfig.secondaryContact.role}
+                    </p>
+                    <div className="mt-2.5 flex flex-col gap-1.5 text-xs">
+                      <a
+                        href={demoConfig.secondaryContact.phoneHref}
+                        className="inline-flex items-center gap-1.5 font-medium text-coffee transition-colors hover:text-caramel hover:underline"
+                      >
+                        <Phone className="size-3 text-caramel" />
+                        <span>{demoConfig.secondaryContact.phone}</span>
+                      </a>
+                      <a
+                        href={demoConfig.secondaryContact.whatsappHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 font-semibold text-wa hover:underline"
+                      >
+                        <MessageCircle className="size-3 text-wa" />
+                        <span>WhatsApp Chat</span>
+                      </a>
+                      <a
+                        href={demoConfig.secondaryContact.emailHref}
+                        className="inline-flex items-center gap-1.5 font-medium text-coffee transition-colors hover:text-caramel hover:underline"
+                      >
+                        <Mail className="size-3 text-caramel" />
+                        <span className="truncate">{demoConfig.secondaryContact.email}</span>
+                      </a>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <span className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    WhatsApp Chat
-                  </span>
-                  <span className="block text-xs font-semibold text-foreground">
-                    Message Us
-                  </span>
-                </div>
-              </a>
-            </div>
+              </div>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <a
+                  href={cafe.phone.href}
+                  className="flex items-center gap-3 rounded-xl border border-coffee/15 bg-card p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-coffee/30 hover:bg-cream-2/40 active:translate-y-0 active:scale-[0.98]"
+                >
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-coffee text-paper">
+                    <Phone className="size-4" />
+                  </div>
+                  <div>
+                    <span className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Call Directly
+                    </span>
+                    <span className="block text-xs font-semibold text-foreground">
+                      {cafe.phone.display}
+                    </span>
+                  </div>
+                </a>
+
+                <a
+                  href={cafe.whatsapp.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 rounded-xl border border-coffee/15 bg-card p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-coffee/30 hover:bg-cream-2/40 active:translate-y-0 active:scale-[0.98]"
+                >
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-wa text-white">
+                    <MessageCircle className="size-4" />
+                  </div>
+                  <div>
+                    <span className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      WhatsApp Chat
+                    </span>
+                    <span className="block text-xs font-semibold text-foreground">
+                      Message Us
+                    </span>
+                  </div>
+                </a>
+              </div>
+            )}
           </div>
         </div>
       </div>

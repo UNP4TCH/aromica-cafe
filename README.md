@@ -1,10 +1,79 @@
-# Aromica Café — Official Digital Home 
+# Aromica Café — Website Concept (Portfolio & Sales Demo)
 
-A unified, editorial single-page website for **Aromica Café** (near Boral High School, Kolkata).
+A unified, editorial single-page website concept for **Aromica Café** (near Boral High School, Kolkata), maintained as an agency portfolio showcase and client sales demo by **Susmit Dey**.
 
 ---
 
-## 🎨Color System Tokens
+## 💼 Demo Configuration (`src/data/demoConfig.ts`)
+
+The project includes a centralized, toggleable demo configuration architecture:
+- `demoConfig.enabled`: When `true`, automatically activates subtle demo attributions, editorial photo watermarks, and agency sales contact areas (`tel:` / `mailto:`).
+- `demoConfig.owner`: Project creator and demo owner (**Susmit Dey**).
+- `demoConfig.secondaryContact`: Agency sales and inquiry contact point (**Tuhimrahamain**).
+- When `demoConfig.enabled` is switched to `false` for a live client deployment, all demo watermarks, attributions, and agency contacts cleanly disappear and revert to client configuration.
+
+---
+
+## 🛠️ How to Adapt This Template for a New Café
+
+This project is engineered as a **reusable Café Website System**:
+
+```
+REUSABLE CORE + CLIENT CONFIGURATION + CLIENT CONTENT + CLIENT ASSETS = CLIENT WEBSITE
+```
+
+### 1. Where Client Configuration Lives
+All core business details, contact information, hours, and external links are centralized in [`src/data/cafe.ts`](file:///d:/agency/cafe-aromica/aromica-final/src/data/cafe.ts).
+
+### 2. Where Menu Data Lives
+Menu categories, groups, prices, descriptions, and dietary flags (`veg: boolean`) live in the `menuCategories` array in [`src/data/cafe.ts`](file:///d:/agency/cafe-aromica/aromica-final/src/data/cafe.ts). Categories are completely data-driven with no hardcoded assumptions.
+
+### 3. Where Gallery Data Lives
+The `galleryItems` array in [`src/data/cafe.ts`](file:///d:/agency/cafe-aromica/aromica-final/src/data/cafe.ts) defines all gallery images, captions, alt text, and aspect ratios. The lightbox modal automatically adapts to any number of items.
+
+### 4. Where Images Are Placed
+All client photographs are stored in `public/images/`. Simply drop webp/jpg images there and reference their paths in `cafe.heroImage`, `cafe.atmosphere.image`, and `galleryItems`.
+
+### 5. How to Change Branding
+- **Name & Slogan**: Update `cafe.name`, `cafe.brandWord1`, `cafe.brandWord2`, `cafe.tagline`, and `cafe.slogan` in `cafe.ts`.
+- **Palette & Tokens**: Adjust CSS variables in [`src/index.css`](file:///d:/agency/cafe-aromica/aromica-final/src/index.css) (`--espresso`, `--coffee`, `--caramel`, `--gold`, `--paper`, `--accent`).
+
+### 6. How to Change Hours & Open/Closed Status
+Edit `weeklySchedule` in `cafe.ts`. Set `isClosed: true` for weekly off-days, and configure `openMinutes` / `closeMinutes` along with display strings. The `OpenStatusBadge` dynamically evaluates the schedule without hardcoded times.
+
+### 7. How to Configure External Links
+Configure destinations in `cafe.ts`:
+- Google Maps directions: `cafe.directions.href` and `cafe.directions.embedSrc`
+- WhatsApp link: `cafe.whatsapp.href`
+- Phone number: `cafe.phone.display` and `cafe.phone.href`
+- Instagram handle and URL: `cafe.instagram`
+- Reviews link: `cafe.reviews.href`
+
+### 8. How to Enable / Disable Optional Features
+Optional integrations degrade gracefully using flags in `cafe.ts`:
+- `cafe.orderOnline.enabled`: When `false`, order buttons in header, hero, menu, and mobile bar are cleanly omitted.
+- `cafe.menuFlipbook.enabled`: When `false`, flipbook menu link is hidden.
+- `cafe.reviews.enabled`: When `false`, review CTA is hidden.
+
+### 9. How Demo Mode Works
+When `demoConfig.enabled = true`, the website serves as an agency portfolio demonstration showcasing Susmit Dey's design capabilities with non-intrusive watermarks and inquiry CTAs.
+
+### 10. How to Switch to Client Mode
+Set `enabled: false` in [`src/data/demoConfig.ts`](file:///d:/agency/cafe-aromica/aromica-final/src/data/demoConfig.ts). The entire site automatically converts into a pure client website without modifying components.
+
+---
+
+## 📐 Client Customization Boundary
+
+| Layer | Responsibility | What Changes |
+| :--- | :--- | :--- |
+| **Client Config** | Business Identity | Name, address, phone, WhatsApp, opening hours, social links, SEO |
+| **Client Content** | Offerings & Visuals | Menu categories, items, prices, dietary flags, gallery captions |
+| **Client Assets** | Photography & Media | Hero photo, atmosphere photo, storefront photo, gallery items, favicon |
+| **Agency Core** | Framework Architecture | Layout, animation system, tactile hover effects, accessible lightbox, responsive behavior |
+| **Custom Dev** | Bespoke Capabilities | Custom online ordering backend, table reservations, custom POS sync |
+
+## 🎨 Color System Tokens
 
 ```css
 --espresso: #241611;    /* Primary dark tone */
@@ -32,7 +101,11 @@ A unified, editorial single-page website for **Aromica Café** (near Boral High 
 
 ---
 
+<<<<<<< HEAD
 ## Key Refinements
+=======
+## ✨ Key Refinements
+>>>>>>> 28a4245 (Finalize Aromica Café portfolio demo)
 
 1. **Gallery Lightbox**:
    - Clicking any gallery item opens an accessible full-resolution viewer.

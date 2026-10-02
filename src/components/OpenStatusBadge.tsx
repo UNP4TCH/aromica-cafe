@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { CLOSED_DAY_INDEX, CLOSE_MINUTES, OPEN_MINUTES } from "@/data/cafe";
+import { cafe, weeklySchedule } from "@/data/cafe";
 
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const WEEKDAY_INDEX: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
@@ -23,49 +23,70 @@ function calculateCurrentStatus(): StatusInfo {
   try {
     const parts = kolkataFormatter.formatToParts(new Date());
     const getVal = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
-    const day = WEEKDAY_INDEX[getVal("weekday")] ?? 0;
+    const currentDay = WEEKDAY_INDEX[getVal("weekday")] ?? 0;
     const hour = parseInt(getVal("hour"), 10) || 0;
     const minute = parseInt(getVal("minute"), 10) || 0;
     const currentMinutes = hour * 60 + minute;
 
-    const isOpenDay = day !== CLOSED_DAY_INDEX;
+    const todaySchedule = weeklySchedule.find((s) => s.dayIndex === currentDay);
 
-    if (isOpenDay && currentMinutes >= OPEN_MINUTES && currentMinutes < CLOSE_MINUTES) {
-      const minutesLeft = CLOSE_MINUTES - currentMinutes;
-      if (minutesLeft <= 30) {
+    const findNextOpenDay = (): { dayText: string; openDisplay: string } => {
+      for (let offset = 1; offset <= 7; offset++) {
+        const checkDay = (currentDay + offset) % 7;
+        const sched = weeklySchedule.find((s) => s.dayIndex === checkDay);
+        if (sched && !sched.isClosed) {
+          const dayText = offset === 1 ? "tomorrow" : (DAY_NAMES[checkDay] || "soon");
+          const openDisplay = sched.openDisplay || "5:00 PM";
+          return { dayText, openDisplay };
+        }
+      }
+      return { dayText: "soon", openDisplay: "5:00 PM" };
+    };
+
+    if (
+      todaySchedule &&
+      !todaySchedule.isClosed &&
+      todaySchedule.openMinutes !== undefined &&
+      todaySchedule.closeMinutes !== undefined
+    ) {
+      const openMin = todaySchedule.openMinutes;
+      const closeMin = todaySchedule.closeMinutes;
+      const openDisplay = todaySchedule.openDisplay || "5:00 PM";
+      const closeDisplay = todaySchedule.closeDisplay || "10:30 PM";
+
+      if (currentMinutes >= openMin && currentMinutes < closeMin) {
+        const minutesLeft = closeMin - currentMinutes;
+        if (minutesLeft <= 30) {
+          return {
+            isOpen: true,
+            label: `Open Now · Closes at ${closeDisplay}`,
+            isClosingSoon: true,
+          };
+        }
         return {
           isOpen: true,
-          label: "Open Now · Closes at 10:30 PM",
-          isClosingSoon: true,
+          label: `Open Now · Until ${closeDisplay}`,
         };
       }
-      return {
-        isOpen: true,
-        label: "Open Now · Until 10:30 PM",
-      };
+
+      if (currentMinutes < openMin) {
+        return {
+          isOpen: false,
+          label: `Closed · Opens today at ${openDisplay}`,
+        };
+      }
     }
 
-    if (isOpenDay && currentMinutes < OPEN_MINUTES) {
-      return {
-        isOpen: false,
-        label: "Closed · Opens today at 5:00 PM",
-      };
-    }
-
-    // Determine next opening day
-    let nextDayIndex = (day + 1) % 7;
-    if (nextDayIndex === CLOSED_DAY_INDEX) {
-      nextDayIndex = (nextDayIndex + 1) % 7;
-    }
-    const dayText = nextDayIndex === (day + 1) % 7 ? "tomorrow" : DAY_NAMES[nextDayIndex];
+    // Currently closed (either day is closed or after closing time)
+    const { dayText, openDisplay } = findNextOpenDay();
     return {
       isOpen: false,
-      label: `Closed · Opens ${dayText} at 5:00 PM`,
+      label: `Closed · Opens ${dayText} at ${openDisplay}`,
     };
   } catch {
     return {
       isOpen: false,
-      label: "Tue–Sun · 5:00 PM – 10:30 PM",
+      label: cafe.hours.summary,
     };
   }
 }

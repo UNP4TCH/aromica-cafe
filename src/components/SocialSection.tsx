@@ -53,7 +53,7 @@ export function SocialSection() {
             </p>
             <div className="mt-4 border-t border-coffee/10 pt-4">
               <a
-                href="https://www.google.com/maps/search/?api=1&query=AROMICA+CAFE+Boral+Main+Road+Kolkata"
+                href={cafe.reviews.href}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group inline-flex items-center gap-1.5 text-xs font-semibold text-coffee transition-colors hover:text-caramel"

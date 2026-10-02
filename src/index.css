@@ -132,6 +132,11 @@
   a, button, [role="button"], input[type="submit"], input[type="button"], select, [role="tab"], summary {
     cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M7 1c0 2-1.2 2.5-1.2 4.2' stroke='%23C2542B' stroke-width='1.8' stroke-linecap='round'/%3E%3Cpath d='M11.5 0.5c0 2-1.2 2.5-1.2 4.2' stroke='%23D9A45B' stroke-width='1.8' stroke-linecap='round'/%3E%3Cpath d='M3 7.5h12v6a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5v-6z' fill='%23C2542B' stroke='%23FBF4E8' stroke-width='1.2'/%3E%3Cpath d='M15 9h2.2a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H15' stroke='%23C2542B' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M1.5 21h15' stroke='%23D9A45B' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E") 2 2, pointer;
   }
+
+  /* Form Text Inputs: Standard I-beam for seamless text editing and caret positioning */
+  input[type="text"], input[type="search"], textarea {
+    cursor: text;
+  }
 }
 
 /* ==================================================

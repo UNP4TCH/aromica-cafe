@@ -1,7 +1,92 @@
+export { demoConfig } from "./demoConfig";
+
+export interface DayHours {
+  day: string;
+  hours: string;
+  isClosed: boolean;
+  dayIndex: number; // 0=Sunday, 1=Monday, etc.
+  openMinutes?: number;
+  closeMinutes?: number;
+  openDisplay?: string;
+  closeDisplay?: string;
+}
+
+export const weeklySchedule: DayHours[] = [
+  { day: "Monday", hours: "Closed", isClosed: true, dayIndex: 1 },
+  {
+    day: "Tuesday",
+    hours: "5:00 PM – 10:30 PM",
+    isClosed: false,
+    dayIndex: 2,
+    openMinutes: 17 * 60,
+    closeMinutes: 22 * 60 + 30,
+    openDisplay: "5:00 PM",
+    closeDisplay: "10:30 PM",
+  },
+  {
+    day: "Wednesday",
+    hours: "5:00 PM – 10:30 PM",
+    isClosed: false,
+    dayIndex: 3,
+    openMinutes: 17 * 60,
+    closeMinutes: 22 * 60 + 30,
+    openDisplay: "5:00 PM",
+    closeDisplay: "10:30 PM",
+  },
+  {
+    day: "Thursday",
+    hours: "5:00 PM – 10:30 PM",
+    isClosed: false,
+    dayIndex: 4,
+    openMinutes: 17 * 60,
+    closeMinutes: 22 * 60 + 30,
+    openDisplay: "5:00 PM",
+    closeDisplay: "10:30 PM",
+  },
+  {
+    day: "Friday",
+    hours: "5:00 PM – 10:30 PM",
+    isClosed: false,
+    dayIndex: 5,
+    openMinutes: 17 * 60,
+    closeMinutes: 22 * 60 + 30,
+    openDisplay: "5:00 PM",
+    closeDisplay: "10:30 PM",
+  },
+  {
+    day: "Saturday",
+    hours: "5:00 PM – 10:30 PM",
+    isClosed: false,
+    dayIndex: 6,
+    openMinutes: 17 * 60,
+    closeMinutes: 22 * 60 + 30,
+    openDisplay: "5:00 PM",
+    closeDisplay: "10:30 PM",
+  },
+  {
+    day: "Sunday",
+    hours: "5:00 PM – 10:30 PM",
+    isClosed: false,
+    dayIndex: 0,
+    openMinutes: 17 * 60,
+    closeMinutes: 22 * 60 + 30,
+    openDisplay: "5:00 PM",
+    closeDisplay: "10:30 PM",
+  },
+];
+
+export const OPEN_MINUTES = 17 * 60; // 5:00 PM
+export const CLOSE_MINUTES = 22 * 60 + 30; // 10:30 PM
+export const CLOSED_DAY_INDEX = 1; // Monday (0 = Sun, 1 = Mon)
+
 export const cafe = {
   name: "Aromica Café",
+  brandWord1: "Aromica",
+  brandWord2: "Café",
   tagline: "Coffee • Chai • Comfort",
   slogan: "Good Food, Good Mood",
+  description:
+    "A warm neighborhood café for unhurried cups of coffee, steaming kullad chai, and freshly prepared comfort food near Boral High School.",
   neighborhood: "Near Boral High School",
   city: "Kolkata",
   address: {
@@ -12,28 +97,44 @@ export const cafe = {
     full: "AROMICA CAFE, Rajnarayan park, C/9, Boral Main Road, near Boral high school, Usha Pally, Kamdahari, Kolkata, Rajpur Sonarpur, West Bengal 700154",
   },
   landmarks: ["Near Boral High School", "Rajnarayan Park, C/9", "Boral Main Road"],
+  landmarkGuidance:
+    "Travel along Boral Main Road toward Usha Pally and Kamdahari. Look for Rajnarayan Park near Boral High School; the café is at premises C/9.",
+  visitDescription:
+    "Conveniently situated on Boral Main Road near Boral High School. Drop by for a relaxed evening cup, comfort snacks, or takeaways.",
+  // Client business contact configuration (used when demoConfig.enabled is false)
   phone: {
-    display: "+91 91236 07395",
-    raw: "9123607395",
-    href: "tel:+919123607395",
+    enabled: true,
+    display: "+91 ••••• •••••",
+    raw: "",
+    href: "#",
   },
   whatsapp: {
-    display: "+91 91236 07395",
-    raw: "9123607395",
-    href: "https://wa.me/919123607395?text=Hi%20Aromica%20Caf%C3%A9!",
+    enabled: true,
+    display: "+91 ••••• •••••",
+    raw: "",
+    href: "#",
   },
   instagram: {
+    enabled: true,
     handle: "@aromica_cafe_",
     href: "https://www.instagram.com/aromica_cafe_/",
   },
+  reviews: {
+    enabled: true,
+    href: "https://www.google.com/maps/search/?api=1&query=AROMICA+CAFE+Boral+Main+Road+Kolkata",
+  },
   orderOnline: {
+    enabled: true,
     label: "Order Online",
     href: "https://order.khide.in/191242969",
   },
   menuFlipbook: {
+    enabled: true,
+    label: "Flipbook Menu",
     href: "https://go.fliplink.me/view/89104736-B13B-4B7A-936A-A6440716531F",
   },
   directions: {
+    enabled: true,
     href: "https://www.google.com/maps/dir//AROMICA+CAFE,+Rajnarayan+park,+C%2F9,+Boral+Main+Road,+near+Boral+high+school,+Usha+Pally,+Kamdahari,+Kolkata,+Rajpur+Sonarpur,+West+Bengal+700154/@22.4724502,88.3706634,14z/data=!4m8!4m7!1m0!1m5!1m1!1s0x3a027117fdf49f9d:0x8c5e094bd0449ba!2m2!1d88.3758395!2d22.4543465?entry=ttu&g_ep=EgoyMDI2MDkyMy4wIKXMDSoASAFQAw%3D%3D",
     embedSrc: "https://maps.google.com/maps?q=22.4543465,88.3758395&z=16&output=embed",
   },
@@ -41,28 +142,36 @@ export const cafe = {
     lat: 22.4543465,
     lng: 88.3758395,
   },
+  heroImage: {
+    src: "/images/aromica-exterior-drinks-01.webp",
+    alt: "AROMICA Café storefront at night with illuminated signage and two chilled drinks held in a toast",
+  },
+  atmosphere: {
+    eyebrow: "Coffee · Chai · Comfort",
+    title: "Good Food, Good Mood",
+    description:
+      "A warm neighborhood corner near Boral High School for unhurried evenings, quiet conversations, and freshly prepared comfort food.",
+    image: {
+      src: "/images/aromica-interior-01.webp",
+      alt: "Interior wall with painted green arches, framed artwork, and woven pendant lamps inside Aromica Café",
+      badge: "Inside Aromica · Boral",
+    },
+  },
+  menu: {
+    title: "The Menu",
+    eyebrow: "Fresh Taste · Friendly Prices",
+    subtitle: "Prepared for evening cravings—from a quick kullad chai to full comfort meals.",
+    footerNote:
+      "Prices are inclusive of taxes. Customizations such as extra cheese, paneer or chicken are available on request.",
+  },
+  hours: {
+    summary: "Tue–Sun 5:00 – 10:30 PM (Mon closed)",
+    daysOpenSummary: "Tuesday – Sunday",
+    timeOpenSummary: "5:00 PM – 10:30 PM",
+    closedDaySummary: "Monday: Closed",
+    weekly: weeklySchedule,
+  },
 } as const;
-
-export const OPEN_MINUTES = 17 * 60; // 5:00 PM
-export const CLOSE_MINUTES = 22 * 60 + 30; // 10:30 PM
-export const CLOSED_DAY_INDEX = 1; // Monday (0 = Sun, 1 = Mon)
-
-export interface DayHours {
-  day: string;
-  hours: string;
-  isClosed: boolean;
-  dayIndex: number; // 0=Sunday, 1=Monday, etc.
-}
-
-export const weeklySchedule: DayHours[] = [
-  { day: "Monday", hours: "Closed", isClosed: true, dayIndex: 1 },
-  { day: "Tuesday", hours: "5:00 PM – 10:30 PM", isClosed: false, dayIndex: 2 },
-  { day: "Wednesday", hours: "5:00 PM – 10:30 PM", isClosed: false, dayIndex: 3 },
-  { day: "Thursday", hours: "5:00 PM – 10:30 PM", isClosed: false, dayIndex: 4 },
-  { day: "Friday", hours: "5:00 PM – 10:30 PM", isClosed: false, dayIndex: 5 },
-  { day: "Saturday", hours: "5:00 PM – 10:30 PM", isClosed: false, dayIndex: 6 },
-  { day: "Sunday", hours: "5:00 PM – 10:30 PM", isClosed: false, dayIndex: 0 },
-];
 
 export interface MenuItem {
   name: string;
@@ -405,6 +514,22 @@ export const galleryItems: GalleryItem[] = [
     caption: "Aromica Café at Night",
     category: "Exterior",
     aspectClass: "aspect-[4/3]",
+  },
+  {
+    id: "classic-burger",
+    src: "/images/aromica-burger-01.webp",
+    alt: "Freshly prepared classic burger served in café dining area",
+    caption: "Fresh Classic Burger",
+    category: "Food",
+    aspectClass: "aspect-[4/3]",
+  },
+  {
+    id: "overhead-spread",
+    src: "/images/aromica-burger-momos-overhead-01.webp",
+    alt: "Overhead table spread of freshly made momos and snacks at Aromica",
+    caption: "Café Table Spread",
+    category: "Food",
+    aspectClass: "aspect-square",
   },
 ];
 

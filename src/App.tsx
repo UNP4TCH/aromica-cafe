@@ -7,8 +7,10 @@ import { GallerySection } from "./components/GallerySection";
 import { VisitSection } from "./components/VisitSection";
 import { OrderSection } from "./components/OrderSection";
 import { SocialSection } from "./components/SocialSection";
+import { DemoContactSection } from "./components/DemoContactSection";
 import { Footer } from "./components/Footer";
 import { MobileActionBar } from "./components/MobileActionBar";
+import { DemoOrderModal } from "./components/DemoOrderModal";
 
 export function App() {
   return (
@@ -45,13 +47,19 @@ export function App() {
 
         {/* 9. Social & Instagram */}
         <SocialSection />
+
+        {/* 10. Agency Sales Demo & Portfolio Inquiries (Active when demo mode is enabled) */}
+        <DemoContactSection />
       </main>
 
-      {/* 10. Footer */}
+      {/* 11. Footer */}
       <Footer />
 
       {/* 11. Mobile Action Bar (Sticky at bottom on small viewports) */}
       <MobileActionBar />
+
+      {/* 12. Demo Order Interception Modal (Accessible concept notice) */}
+      <DemoOrderModal />
     </div>
   );
 }

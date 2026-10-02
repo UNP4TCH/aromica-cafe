@@ -1,14 +1,23 @@
 import { useEffect, useState } from "react";
 import { Menu, ShoppingBag, X } from "lucide-react";
 import { cafe } from "@/data/cafe";
+import { demoConfig } from "@/data/demoConfig";
+import { openOrderDemoModal } from "@/lib/demoModal";
 
-const navLinks = [
+const baseNavLinks = [
   { href: "#menu", label: "Menu" },
   { href: "#atmosphere", label: "Atmosphere" },
   { href: "#gallery", label: "Gallery" },
   { href: "#visit", label: "Visit Us" },
   { href: cafe.instagram.href, label: "Instagram", external: true },
 ];
+
+const navLinks = demoConfig.enabled
+  ? [
+      ...baseNavLinks,
+      { href: "#demo-contact", label: "Concept" },
+    ]
+  : baseNavLinks;
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -24,6 +33,14 @@ export function Header() {
     }
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [mobileMenuOpen]);
+
+  const handleOrderClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (demoConfig.enabled && demoConfig.externalActions.demoMode) {
+      e.preventDefault();
+      setMobileMenuOpen(false);
+      openOrderDemoModal();
+    }
+  };
 
   const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith("#")) {
@@ -44,14 +61,20 @@ export function Header() {
           href="#top"
           onClick={(e) => handleScrollTo(e, "#top")}
           className="group flex items-baseline gap-2.5 transition-opacity hover:opacity-90"
-          aria-label="Aromica Café — Return to top"
+          aria-label={`${cafe.name} — Return to top`}
         >
           <span className="font-display text-2xl tracking-tight text-primary sm:text-2xl">
-            Aromica <span className="font-normal italic text-caramel">Café</span>
+            {cafe.brandWord1} <span className="font-normal italic text-caramel">{cafe.brandWord2}</span>
           </span>
-          <span className="hidden text-[11px] font-semibold uppercase tracking-wider text-muted sm:inline-block">
-            Boral · Kolkata
-          </span>
+          {demoConfig.enabled ? (
+            <span className="inline-flex items-center rounded-full border border-caramel/35 bg-cream-2/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-caramel">
+              {demoConfig.attribution.label}
+            </span>
+          ) : (
+            <span className="hidden text-[11px] font-semibold uppercase tracking-wider text-muted sm:inline-block">
+              {cafe.neighborhood} · {cafe.city}
+            </span>
+          )}
         </a>
 
         {/* Desktop Navigation */}
@@ -70,17 +93,20 @@ export function Header() {
         </nav>
 
         {/* CTA Button */}
-        <div className="hidden items-center gap-4 md:flex">
-          <a
-            href={cafe.orderOnline.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group inline-flex min-h-[40px] items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-xs font-semibold tracking-wide uppercase text-paper shadow-sm transition-all duration-200 hover:bg-accent/90 hover:-translate-y-0.5 hover:shadow-paper active:translate-y-0 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
-          >
-            <ShoppingBag className="size-4 transition-transform duration-200 group-hover:scale-105" />
-            <span>Order Online</span>
-          </a>
-        </div>
+        {(cafe.orderOnline.enabled || demoConfig.enabled) && (
+          <div className="hidden items-center gap-4 md:flex">
+            <a
+              href={cafe.orderOnline.href}
+              onClick={handleOrderClick}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex min-h-[40px] items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-xs font-semibold tracking-wide uppercase text-paper shadow-sm transition-all duration-200 hover:bg-accent/90 hover:-translate-y-0.5 hover:shadow-paper active:translate-y-0 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
+            >
+              <ShoppingBag className="size-4 transition-transform duration-200 group-hover:scale-105" />
+              <span>{demoConfig.enabled ? "Order Online Demo" : cafe.orderOnline.label}</span>
+            </a>
+          </div>
+        )}
 
         {/* Mobile menu toggle with >= 44px touch target */}
         <button
@@ -109,18 +135,20 @@ export function Header() {
                 {link.label}
               </a>
             ))}
-            <div className="mt-4 border-t border-coffee/15 pt-4">
-              <a
-                href={cafe.orderOnline.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-semibold tracking-wide text-paper transition-all duration-150 active:scale-[0.98] hover:bg-accent/90"
-              >
-                <ShoppingBag className="size-4" />
-                <span>Order Online</span>
-              </a>
-            </div>
+            {(cafe.orderOnline.enabled || demoConfig.enabled) && (
+              <div className="mt-4 border-t border-coffee/15 pt-4">
+                <a
+                  href={cafe.orderOnline.href}
+                  onClick={handleOrderClick}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-semibold tracking-wide text-paper transition-all duration-150 active:scale-[0.98] hover:bg-accent/90"
+                >
+                  <ShoppingBag className="size-4" />
+                  <span>{demoConfig.enabled ? "Order Online Demo" : cafe.orderOnline.label}</span>
+                </a>
+              </div>
+            )}
           </div>
         </div>
       )}

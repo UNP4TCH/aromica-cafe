@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { cafe, galleryItems } from "@/data/cafe";
 import { InstagramIcon } from "@/components/brand-icons";
+import { PhotoWatermark } from "@/components/PhotoWatermark";
 import { cn } from "@/lib/utils";
 import { useScrollReveal } from "@/lib/useScrollReveal";
 
@@ -76,9 +77,11 @@ export function GallerySection() {
           }`}
         >
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-caramel">
-              Visual Moments
-            </p>
+            <div className="flex items-center gap-2.5">
+              <p className="text-xs font-semibold uppercase tracking-wider text-caramel">
+                Visual Moments
+              </p>
+            </div>
             <h2 id="gallery-title" className="mt-3 font-display text-4xl text-primary sm:text-5xl lg:text-6xl">
               Inside Aromica
             </h2>
@@ -127,6 +130,8 @@ export function GallerySection() {
                     </p>
                   )}
                 </div>
+
+                <PhotoWatermark className="bottom-2.5 right-2.5 group-hover:opacity-0" />
               </button>
             </div>
           ))}
@@ -166,6 +171,8 @@ export function GallerySection() {
                 className="max-h-[64vh] sm:max-h-[72vh] w-auto max-w-full select-none object-contain"
               />
 
+              <PhotoWatermark className="bottom-3 right-3 sm:bottom-4 sm:right-4 z-20" />
+
               <button
                 type="button"
                 onClick={() => navigatePhoto(-1)}
@@ -188,7 +195,9 @@ export function GallerySection() {
             {/* Photo metadata strip styled in Aromica design system */}
             <div className="flex items-center justify-between gap-3 border-t border-mocha/40 bg-coffee/90 p-4 sm:px-6">
               <div className="min-w-0 flex-1">
-                <p className="truncate font-display text-base text-paper sm:text-lg">{activePhoto.caption}</p>
+                <div className="flex items-center gap-2">
+                  <p className="truncate font-display text-base text-paper sm:text-lg">{activePhoto.caption}</p>
+                </div>
                 <p className="truncate text-xs text-cream/70">{activePhoto.alt}</p>
               </div>
               <span className="shrink-0 font-display text-xs font-semibold tabular-nums text-gold">

@@ -1,5 +1,8 @@
 import { ArrowRight, Compass, ShoppingBag } from "lucide-react";
 import { cafe } from "@/data/cafe";
+import { demoConfig } from "@/data/demoConfig";
+import { PhotoWatermark } from "@/components/PhotoWatermark";
+import { openOrderDemoModal } from "@/lib/demoModal";
 
 export function Hero() {
   const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -10,6 +13,13 @@ export function Hero() {
     }
   };
 
+  const handleOrderClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (demoConfig.enabled && demoConfig.externalActions.demoMode) {
+      e.preventDefault();
+      openOrderDemoModal();
+    }
+  };
+
   return (
     <section id="top" className="relative overflow-hidden px-5 py-12 sm:py-16 lg:px-8 lg:py-24">
       <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-12 lg:gap-16">
@@ -17,18 +27,26 @@ export function Hero() {
         <div className="lg:col-span-6">
           <div className="animate-hero-eyebrow flex items-center gap-3 text-xs font-semibold uppercase tracking-wider text-coffee/80">
             <span className="h-px w-8 bg-caramel" aria-hidden="true" />
-            <span>Near Boral High School · Kolkata</span>
+            {demoConfig.enabled ? (
+              <span className="flex items-center gap-2">
+                <span>Concept by {demoConfig.owner.name}</span>
+                <span className="text-muted-foreground/60">·</span>
+                <span className="font-normal text-muted-foreground">Kolkata</span>
+              </span>
+            ) : (
+              <span>{cafe.neighborhood} · {cafe.city}</span>
+            )}
           </div>
 
           <h1 className="mt-6 font-signature text-[2.85rem] sm:text-6xl md:text-7xl lg:text-[5.5rem] xl:text-[6.5rem] font-normal leading-[0.98] tracking-[-0.015em] text-coffee">
             <span className="block overflow-hidden pb-1 -mb-1">
               <span className="block animate-hero-brand-line1 will-change-transform">
-                Aromica
+                {cafe.brandWord1}
               </span>
             </span>
             <span className="block overflow-hidden pt-1 pb-1 -mb-1">
               <span className="block animate-hero-brand-line2 italic font-normal text-caramel will-change-transform">
-                Café
+                {cafe.brandWord2}
               </span>
             </span>
           </h1>
@@ -38,7 +56,7 @@ export function Hero() {
           </p>
 
           <p className="animate-hero-copy mt-6 max-w-lg text-base sm:text-lg leading-relaxed text-muted-foreground">
-            A warm neighborhood café for unhurried cups of coffee, steaming kullad chai, and freshly prepared comfort food near Boral High School.
+            {cafe.description}
           </p>
 
           <div className="animate-hero-actions mt-8 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
@@ -53,6 +71,7 @@ export function Hero() {
 
             <a
               href={cafe.orderOnline.href}
+              onClick={handleOrderClick}
               target="_blank"
               rel="noopener noreferrer"
               className="group inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-paper shadow-sm transition-all duration-200 hover:bg-accent/90 hover:-translate-y-0.5 hover:shadow-paper active:translate-y-0 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-accent"
@@ -83,12 +102,13 @@ export function Hero() {
           {/* Arched editorial frame */}
           <div className="relative mx-auto aspect-[4/5] max-h-[620px] w-full max-w-[480px] overflow-hidden rounded-[42%_42%_2.5rem_2.5rem] border border-coffee/15 bg-card shadow-paper lg:max-w-none">
             <img
-              src="/images/aromica-exterior-drinks-01.webp"
-              alt="AROMICA Café storefront at night with illuminated signage and two chilled drinks held in a toast"
+              src={cafe.heroImage.src}
+              alt={cafe.heroImage.alt}
               className="h-full w-full object-cover object-[24%_center] transition-transform duration-700 ease-out hover:scale-[1.025]"
               loading="eager"
               fetchPriority="high"
             />
+            <PhotoWatermark className="bottom-4 right-4 sm:bottom-6 sm:right-6" />
           </div>
 
           {/* Floating brand slogan badge with mobile safety margin */}

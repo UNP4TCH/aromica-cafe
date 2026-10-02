@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BookOpen, Search, ShoppingBag, X } from "lucide-react";
 import { cafe, menuCategories, type MenuCategory, type MenuGroup, type MenuItem } from "@/data/cafe";
+import { demoConfig } from "@/data/demoConfig";
+import { openOrderDemoModal } from "@/lib/demoModal";
 import { cn } from "@/lib/utils";
 import { useScrollReveal } from "@/lib/useScrollReveal";
 
-const ALL_CATEGORY = "all";
+const DEFAULT_CATEGORY = menuCategories[0]?.id || "";
 
 function matchesQuery(item: MenuItem, q: string): boolean {
   const query = q.toLowerCase();
@@ -17,9 +19,16 @@ function matchesQuery(item: MenuItem, q: string): boolean {
 
 export function MenuSection() {
   const { ref: headerRevealRef, isRevealed: isHeaderRevealed } = useScrollReveal();
-  const [activeCategory, setActiveCategory] = useState<string>(ALL_CATEGORY);
+  const [activeCategory, setActiveCategory] = useState<string>(DEFAULT_CATEGORY);
   const [searchQuery, setSearchQuery] = useState("");
   const [vegOnly, setVegOnly] = useState(false);
+
+  const handleOrderClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (demoConfig.enabled && demoConfig.externalActions.demoMode) {
+      e.preventDefault();
+      openOrderDemoModal();
+    }
+  };
 
   const filterBarAnchorRef = useRef<HTMLDivElement>(null);
   const tabsContainerRef = useRef<HTMLDivElement>(null);
@@ -27,13 +36,13 @@ export function MenuSection() {
   const pendingScrollRef = useRef<string | null>(null);
 
   const tabs = useMemo(
-    () => [{ id: ALL_CATEGORY, label: "All Items" }, ...menuCategories.map((c) => ({ id: c.id, label: c.label }))],
+    () => menuCategories.map((c) => ({ id: c.id, label: c.label })),
     []
   );
 
   const filteredCategories = useMemo<MenuCategory[]>(() => {
     const q = searchQuery.trim();
-    const source = q || activeCategory === ALL_CATEGORY
+    const source = q
       ? menuCategories
       : menuCategories.filter((c) => c.id === activeCategory);
 
@@ -146,35 +155,40 @@ export function MenuSection() {
         >
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-accent">
-              Fresh Taste · Friendly Prices
+              {cafe.menu.eyebrow}
             </p>
             <h2 id="menu-title" className="mt-3 font-display text-4xl text-primary sm:text-5xl lg:text-6xl">
-              The Menu
+              {cafe.menu.title}
             </h2>
             <p className="mt-3 max-w-xl text-base text-muted-foreground">
-              Prepared for evening cravings—from a quick kullad chai to full comfort meals.
+              {cafe.menu.subtitle}
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <a
-              href={cafe.menuFlipbook.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-[40px] items-center gap-2 rounded-full border border-coffee/25 bg-background px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-coffee shadow-2xs transition-all duration-200 hover:bg-cream-2/70 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
-            >
-              <BookOpen className="size-4 text-caramel" />
-              <span>Flipbook Menu</span>
-            </a>
-            <a
-              href={cafe.orderOnline.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex min-h-[40px] items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-paper shadow-sm transition-all duration-200 hover:bg-accent/90 hover:-translate-y-0.5 hover:shadow-paper active:translate-y-0 active:scale-[0.98]"
-            >
-              <ShoppingBag className="size-4 transition-transform duration-200 group-hover:scale-105" />
-              <span>Order Online</span>
-            </a>
+            {cafe.menuFlipbook.enabled && (
+              <a
+                href={cafe.menuFlipbook.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-[40px] items-center gap-2 rounded-full border border-coffee/25 bg-background px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-coffee shadow-2xs transition-all duration-200 hover:bg-cream-2/70 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
+              >
+                <BookOpen className="size-4 text-caramel" />
+                <span>{cafe.menuFlipbook.label}</span>
+              </a>
+            )}
+            {(cafe.orderOnline.enabled || demoConfig.enabled) && (
+              <a
+                href={cafe.orderOnline.href}
+                onClick={handleOrderClick}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex min-h-[40px] items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-paper shadow-sm transition-all duration-200 hover:bg-accent/90 hover:-translate-y-0.5 hover:shadow-paper active:translate-y-0 active:scale-[0.98]"
+              >
+                <ShoppingBag className="size-4 transition-transform duration-200 group-hover:scale-105" />
+                <span>{demoConfig.enabled ? "Order Online Demo" : cafe.orderOnline.label}</span>
+              </a>
+            )}
           </div>
         </div>
 
@@ -295,7 +309,7 @@ export function MenuSection() {
               onClick={() => {
                 setSearchQuery("");
                 setVegOnly(false);
-                setActiveCategory(ALL_CATEGORY);
+                setActiveCategory(DEFAULT_CATEGORY);
               }}
               className="mt-5 rounded-full border border-primary/30 px-5 py-2 text-xs font-semibold uppercase tracking-wider text-primary transition-all duration-200 hover:bg-secondary/40 active:scale-95"
             >
@@ -309,7 +323,7 @@ export function MenuSection() {
           >
             {filteredCategories.map((category) => (
               <div key={category.id} className="scroll-mt-32">
-                {(activeCategory === ALL_CATEGORY || searchQuery) && (
+                {(searchQuery || filteredCategories.length > 1) && (
                   <div className="mb-6 flex items-baseline gap-3 border-b border-primary/20 pb-2">
                     <h3 className="font-display text-2xl text-primary sm:text-3xl">
                       {category.label}
@@ -330,17 +344,20 @@ export function MenuSection() {
         {/* Footer note & ordering link */}
         <div className="mt-16 border-t border-primary/20 pt-8 text-center sm:flex sm:items-center sm:justify-between">
           <p className="text-xs text-muted-foreground">
-            Prices are inclusive of taxes. Customizations such as extra cheese, paneer or chicken are available on request.
+            {cafe.menu.footerNote}
           </p>
-          <a
-            href={cafe.orderOnline.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group mt-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary transition-colors hover:text-accent sm:mt-0"
-          >
-            <span className="link-editorial">Proceed to Digital Ordering</span>
-            <ShoppingBag className="size-3.5 transition-transform duration-200 group-hover:scale-110" />
-          </a>
+          {(cafe.orderOnline.enabled || demoConfig.enabled) && (
+            <a
+              href={cafe.orderOnline.href}
+              onClick={handleOrderClick}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group mt-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary transition-colors hover:text-accent sm:mt-0"
+            >
+              <span className="link-editorial">{demoConfig.enabled ? "Explore Ordering Demo" : "Proceed to Digital Ordering"}</span>
+              <ShoppingBag className="size-3.5 transition-transform duration-200 group-hover:scale-110" />
+            </a>
+          )}
         </div>
       </div>
     </section>
