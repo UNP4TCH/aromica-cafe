@@ -59,8 +59,8 @@ export function VisitSection() {
             </div>
           </div>
 
-          {/* Business Details Sidebar */}
-          <div className="flex flex-col gap-6 lg:col-span-5">
+          {/* Café Address Card */}
+          <div className="lg:col-span-5">
             {/* Address & Navigation Card */}
             <div className="rounded-2xl border border-primary/15 bg-card p-5 sm:p-6 shadow-paper">
               <div className="flex items-center gap-2.5">
@@ -118,165 +118,168 @@ export function VisitSection() {
                 </p>
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Operating Hours Card */}
-            <div className="rounded-2xl border border-coffee/15 bg-card p-5 sm:p-6 shadow-paper">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-2.5">
-                  <Clock className="size-5 text-caramel" />
-                  <h3 className="font-display text-xl text-coffee">Opening Hours</h3>
-                </div>
-                <OpenStatusBadge variant="pill" className="self-start sm:self-auto" />
+        {/* Operating Hours & Contact / Concept Inquiries Grid */}
+        <div className="mt-8 grid gap-8 lg:grid-cols-2 lg:items-start">
+          {/* Operating Hours Card */}
+          <div className="rounded-2xl border border-coffee/15 bg-card p-5 sm:p-6 shadow-paper">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-2.5">
+                <Clock className="size-5 text-caramel" />
+                <h3 className="font-display text-xl text-coffee">Opening Hours</h3>
               </div>
-
-              <dl className="mt-4 divide-y divide-coffee/10 text-xs">
-                {weeklySchedule.map((item) => (
-                  <div key={item.day} className="flex items-center justify-between py-2.5">
-                    <dt className="font-medium text-foreground">{item.day}</dt>
-                    <dd
-                      className={
-                        item.isClosed
-                          ? "font-semibold text-accent"
-                          : "tabular-nums text-muted-foreground"
-                      }
-                    >
-                      {item.hours}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
+              <OpenStatusBadge variant="pill" className="self-start sm:self-auto" />
             </div>
 
-            {/* Direct Contact Links / Demo Contact Card */}
-            {demoConfig.enabled ? (
-              <div className="rounded-2xl border border-gold/30 bg-card p-5 sm:p-6 shadow-paper">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="size-4 text-caramel" />
-                  <span className="text-xs font-semibold uppercase tracking-wider text-caramel">
-                    Concept Inquiries
+            <dl className="mt-4 divide-y divide-coffee/10 text-xs">
+              {weeklySchedule.map((item) => (
+                <div key={item.day} className="flex items-center justify-between py-2.5">
+                  <dt className="font-medium text-foreground">{item.day}</dt>
+                  <dd
+                    className={
+                      item.isClosed
+                        ? "font-semibold text-accent"
+                        : "tabular-nums text-muted-foreground"
+                    }
+                  >
+                    {item.hours}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+
+          {/* Direct Contact Links / Demo Contact Card */}
+          {demoConfig.enabled ? (
+            <div className="rounded-2xl border border-gold/30 bg-card p-5 sm:p-6 shadow-paper">
+              <div className="flex items-center gap-2">
+                <Sparkles className="size-4 text-caramel" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-caramel">
+                  Concept Inquiries
+                </span>
+              </div>
+
+              <h3 className="mt-2.5 font-display text-lg text-primary">
+                Have a business that could use something like this?
+              </h3>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                Designed and developed by{" "}
+                <strong className="font-semibold text-primary">{demoConfig.owner.name}</strong> as an interactive concept. Contact us to discuss a tailored web presence for your café or local business.
+              </p>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {/* Primary: Susmit Dey */}
+                <div className="rounded-xl border border-coffee/15 bg-cream-2/40 p-3.5">
+                  <p className="text-xs font-semibold text-primary">
+                    {demoConfig.owner.name}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {demoConfig.owner.role}
+                  </p>
+                  <div className="mt-2.5 flex flex-col gap-1.5 text-xs">
+                    <a
+                      href={demoConfig.owner.phoneHref}
+                      className="inline-flex items-center gap-1.5 font-medium text-coffee transition-colors hover:text-caramel hover:underline"
+                    >
+                      <Phone className="size-3 text-caramel" />
+                      <span>{demoConfig.owner.phone}</span>
+                    </a>
+                    <a
+                      href={demoConfig.owner.whatsappHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 font-semibold text-wa hover:underline"
+                    >
+                      <MessageCircle className="size-3 text-wa" />
+                      <span>WhatsApp Chat</span>
+                    </a>
+                    <a
+                      href={demoConfig.owner.emailHref}
+                      className="inline-flex items-center gap-1.5 font-medium text-coffee transition-colors hover:text-caramel hover:underline"
+                    >
+                      <Mail className="size-3 text-caramel" />
+                      <span className="truncate">{demoConfig.owner.email}</span>
+                    </a>
+                  </div>
+                </div>
+
+                {/* Secondary: Tuhimrahamain */}
+                <div className="rounded-xl border border-coffee/15 bg-cream-2/40 p-3.5">
+                  <p className="text-xs font-semibold text-primary">
+                    {demoConfig.secondaryContact.name}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {demoConfig.secondaryContact.role}
+                  </p>
+                  <div className="mt-2.5 flex flex-col gap-1.5 text-xs">
+                    <a
+                      href={demoConfig.secondaryContact.phoneHref}
+                      className="inline-flex items-center gap-1.5 font-medium text-coffee transition-colors hover:text-caramel hover:underline"
+                    >
+                      <Phone className="size-3 text-caramel" />
+                      <span>{demoConfig.secondaryContact.phone}</span>
+                    </a>
+                    <a
+                      href={demoConfig.secondaryContact.whatsappHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 font-semibold text-wa hover:underline"
+                    >
+                      <MessageCircle className="size-3 text-wa" />
+                      <span>WhatsApp Chat</span>
+                    </a>
+                    <a
+                      href={demoConfig.secondaryContact.emailHref}
+                      className="inline-flex items-center gap-1.5 font-medium text-coffee transition-colors hover:text-caramel hover:underline"
+                    >
+                      <Mail className="size-3 text-caramel" />
+                      <span className="truncate">{demoConfig.secondaryContact.email}</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <a
+                href={cafe.phone.href}
+                className="flex items-center gap-3 rounded-xl border border-coffee/15 bg-card p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-coffee/30 hover:bg-cream-2/40 active:translate-y-0 active:scale-[0.98]"
+              >
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-coffee text-paper">
+                  <Phone className="size-4" />
+                </div>
+                <div>
+                  <span className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Call Directly
+                  </span>
+                  <span className="block text-xs font-semibold text-foreground">
+                    {cafe.phone.display}
                   </span>
                 </div>
+              </a>
 
-                <h3 className="mt-2.5 font-display text-lg text-primary">
-                  Have a business that could use something like this?
-                </h3>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  Designed and developed by{" "}
-                  <strong className="font-semibold text-primary">{demoConfig.owner.name}</strong> as an interactive concept. Contact us to discuss a tailored web presence for your café or local business.
-                </p>
-
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  {/* Primary: Susmit Dey */}
-                  <div className="rounded-xl border border-coffee/15 bg-cream-2/40 p-3.5">
-                    <p className="text-xs font-semibold text-primary">
-                      {demoConfig.owner.name}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground">
-                      {demoConfig.owner.role}
-                    </p>
-                    <div className="mt-2.5 flex flex-col gap-1.5 text-xs">
-                      <a
-                        href={demoConfig.owner.phoneHref}
-                        className="inline-flex items-center gap-1.5 font-medium text-coffee transition-colors hover:text-caramel hover:underline"
-                      >
-                        <Phone className="size-3 text-caramel" />
-                        <span>{demoConfig.owner.phone}</span>
-                      </a>
-                      <a
-                        href={demoConfig.owner.whatsappHref}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 font-semibold text-wa hover:underline"
-                      >
-                        <MessageCircle className="size-3 text-wa" />
-                        <span>WhatsApp Chat</span>
-                      </a>
-                      <a
-                        href={demoConfig.owner.emailHref}
-                        className="inline-flex items-center gap-1.5 font-medium text-coffee transition-colors hover:text-caramel hover:underline"
-                      >
-                        <Mail className="size-3 text-caramel" />
-                        <span className="truncate">{demoConfig.owner.email}</span>
-                      </a>
-                    </div>
-                  </div>
-
-                  {/* Secondary: Tuhimrahamain */}
-                  <div className="rounded-xl border border-coffee/15 bg-cream-2/40 p-3.5">
-                    <p className="text-xs font-semibold text-primary">
-                      {demoConfig.secondaryContact.name}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground">
-                      {demoConfig.secondaryContact.role}
-                    </p>
-                    <div className="mt-2.5 flex flex-col gap-1.5 text-xs">
-                      <a
-                        href={demoConfig.secondaryContact.phoneHref}
-                        className="inline-flex items-center gap-1.5 font-medium text-coffee transition-colors hover:text-caramel hover:underline"
-                      >
-                        <Phone className="size-3 text-caramel" />
-                        <span>{demoConfig.secondaryContact.phone}</span>
-                      </a>
-                      <a
-                        href={demoConfig.secondaryContact.whatsappHref}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 font-semibold text-wa hover:underline"
-                      >
-                        <MessageCircle className="size-3 text-wa" />
-                        <span>WhatsApp Chat</span>
-                      </a>
-                      <a
-                        href={demoConfig.secondaryContact.emailHref}
-                        className="inline-flex items-center gap-1.5 font-medium text-coffee transition-colors hover:text-caramel hover:underline"
-                      >
-                        <Mail className="size-3 text-caramel" />
-                        <span className="truncate">{demoConfig.secondaryContact.email}</span>
-                      </a>
-                    </div>
-                  </div>
+              <a
+                href={cafe.whatsapp.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-xl border border-coffee/15 bg-card p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-coffee/30 hover:bg-cream-2/40 active:translate-y-0 active:scale-[0.98]"
+              >
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-wa text-white">
+                  <MessageCircle className="size-4" />
                 </div>
-              </div>
-            ) : (
-              <div className="grid gap-3 sm:grid-cols-2">
-                <a
-                  href={cafe.phone.href}
-                  className="flex items-center gap-3 rounded-xl border border-coffee/15 bg-card p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-coffee/30 hover:bg-cream-2/40 active:translate-y-0 active:scale-[0.98]"
-                >
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-coffee text-paper">
-                    <Phone className="size-4" />
-                  </div>
-                  <div>
-                    <span className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      Call Directly
-                    </span>
-                    <span className="block text-xs font-semibold text-foreground">
-                      {cafe.phone.display}
-                    </span>
-                  </div>
-                </a>
-
-                <a
-                  href={cafe.whatsapp.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 rounded-xl border border-coffee/15 bg-card p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-coffee/30 hover:bg-cream-2/40 active:translate-y-0 active:scale-[0.98]"
-                >
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-wa text-white">
-                    <MessageCircle className="size-4" />
-                  </div>
-                  <div>
-                    <span className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      WhatsApp Chat
-                    </span>
-                    <span className="block text-xs font-semibold text-foreground">
-                      Message Us
-                    </span>
-                  </div>
-                </a>
-              </div>
-            )}
-          </div>
+                <div>
+                  <span className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    WhatsApp Chat
+                  </span>
+                  <span className="block text-xs font-semibold text-foreground">
+                    Message Us
+                  </span>
+                </div>
+              </a>
+            </div>
+          )}
         </div>
       </div>
     </section>
