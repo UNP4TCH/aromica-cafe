@@ -1,0 +1,551 @@
+// ============================================================================
+// Vercel Serverless Function: /api/demo-sync
+// Provides shared, authenticated cloud snapshot persistence via Upstash Redis REST
+// ============================================================================
+
+const ALLOWED_ORIGINS = new Set([
+  "https://aromica-cafe.vercel.app",
+  "https://aromica-owner-dashboard.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:5174",
+]);
+
+function isOriginAllowed(origin) {
+  if (!origin) return false;
+  if (ALLOWED_ORIGINS.has(origin)) return true;
+  // Support Vercel deployment preview domains for Aromica
+  if (/^https:\/\/aromica-[a-z0-9-]+\.vercel\.app$/.test(origin)) return true;
+  return false;
+}
+
+const MAX_PAYLOAD_SIZE = 1024 * 1024; // 1 MB
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const MAX_WRITES_PER_WINDOW = 60; // 60 writes/min per IP
+
+const writeRateLimiter = new Map();
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const history = writeRateLimiter.get(ip) || [];
+  const validHistory = history.filter((timestamp) => now - timestamp < RATE_LIMIT_WINDOW_MS);
+
+  if (validHistory.length >= MAX_WRITES_PER_WINDOW) {
+    writeRateLimiter.set(ip, validHistory);
+    return false;
+  }
+
+  validHistory.push(now);
+  writeRateLimiter.set(ip, validHistory);
+  return true;
+}
+
+function getBaselineSnapshot() {
+  return {
+    version: 1,
+    updatedAt: 1760000000000,
+    profile: {
+      id: "a0000000-0000-0000-0000-000000000001",
+      name: "Aromica Café",
+      brandWord1: "Aromica",
+      brandWord2: "Café",
+      tagline: "Coffee • Chai • Comfort",
+      slogan: "Good Food, Good Mood",
+      description: "A warm neighborhood café for unhurried cups of coffee, steaming kullad chai, and freshly prepared comfort food near Boral High School.",
+      neighborhood: "Near Boral High School",
+      city: "Kolkata",
+      address: {
+        street: "Rajnarayan Park, C/9, Boral Main Road, near Boral High School",
+        locality: "Usha Pally, Kamdahari",
+        cityRegion: "Kolkata, Rajpur Sonarpur",
+        statePostal: "West Bengal 700154",
+        full: "AROMICA CAFE, Rajnarayan park, C/9, Boral Main Road, near Boral high school, Usha Pally, Kamdahari, Kolkata, Rajpur Sonarpur, West Bengal 700154"
+      },
+      landmarks: ["Near Boral High School", "Rajnarayan Park, C/9", "Boral Main Road"],
+      landmarkGuidance: "Travel along Boral Main Road toward Usha Pally and Kamdahari. Look for Rajnarayan Park near Boral High School; the café is at premises C/9.",
+      visitDescription: "Conveniently situated on Boral Main Road near Boral High School. Drop by for a relaxed evening cup, comfort snacks, or takeaways.",
+      phone: { enabled: true, display: "+91 ••••• •••••", raw: "", href: "#" },
+      whatsapp: { enabled: true, display: "+91 ••••• •••••", raw: "", href: "#" },
+      instagram: { enabled: true, handle: "@aromica_cafe_", href: "https://www.instagram.com/aromica_cafe_/" },
+      reviews: { enabled: true, href: "https://www.google.com/maps/search/?api=1&query=AROMICA+CAFE+Boral+Main+Road+Kolkata" },
+      orderOnline: { enabled: true, label: "Order Online", href: "https://order.khide.in/191242969" },
+      menuFlipbook: { enabled: true, label: "Flipbook Menu", href: "https://go.fliplink.me/view/89104736-B13B-4B7A-936A-A6440716531F" },
+      directions: {
+        enabled: true,
+        href: "https://www.google.com/maps/dir//AROMICA+CAFE,+Rajnarayan+park,+C%2F9,+Boral+Main+Road,+near+Boral+high+school,+Usha+Pally,+Kamdahari,+Kolkata,+Rajpur+Sonarpur,+West+Bengal+700154/@22.4724502,88.3706634,14z/data=!4m8!4m7!1m0!1m5!1m1!1s0x3a027117fdf49f9d:0x8c5e094bd0449ba!2m2!1d88.3758395!2d22.4543465?entry=ttu&g_ep=EgoyMDI2MDkyMy4wIKXMDSoASAFQAw%3D%3D",
+        embedSrc: "https://maps.google.com/maps?q=22.4543465,88.3758395&z=16&output=embed"
+      },
+      coordinates: { lat: 22.4543465, lng: 88.3758395 },
+      heroImage: {
+        src: "/images/aromica-exterior-drinks-01.webp",
+        alt: "AROMICA Café storefront at night with illuminated signage and two chilled drinks held in a toast"
+      },
+      hours: {
+        regular: "5:00 PM – 10:30 PM",
+        closedDay: "Monday",
+        summary: "Tue–Sun 5:00 – 10:30 PM (Mon closed)",
+        daysOpenSummary: "Tuesday – Sunday",
+        timeOpenSummary: "5:00 PM – 10:30 PM",
+        closedDaySummary: "Monday: Closed",
+        scheduleNote: "Evening neighborhood service · Kitchen closes at 10:15 PM"
+      },
+      atmosphere: {
+        eyebrow: "Coffee · Chai · Comfort",
+        title: "Good Food, Good Mood",
+        description: "A warm neighborhood corner near Boral High School for unhurried evenings, quiet conversations, and freshly prepared comfort food.",
+        image: {
+          src: "/images/aromica-interior-01.webp",
+          alt: "Interior wall with painted green arches, framed artwork, and woven pendant lamps inside Aromica Café",
+          badge: "Inside Aromica · Boral"
+        }
+      },
+      menu: {
+        title: "The Menu",
+        eyebrow: "Fresh Taste · Friendly Prices",
+        subtitle: "Prepared for evening cravings—from a quick kullad chai to full comfort meals.",
+        footerNote: "Prices are inclusive of taxes. Customizations such as extra cheese, paneer or chicken are available on request."
+      },
+      menuMeta: {
+        title: "The Menu",
+        eyebrow: "Fresh Taste · Friendly Prices",
+        subtitle: "Prepared for evening cravings—from a quick kullad chai to full comfort meals.",
+        footerNote: "Prices are inclusive of taxes. Customizations such as extra cheese, paneer or chicken are available on request."
+      }
+    },
+    menuCategories: [
+      {
+        id: "beverages",
+        label: "Coffee & Beverages",
+        groups: [
+          {
+            title: "Hot Coffee",
+            items: [
+              { name: "Black Coffee", price: "35", veg: true, available: true },
+              { name: "Milk Coffee", price: "35 / 55", veg: true, available: true },
+              { name: "Cappuccino", price: "89", veg: true, available: true }
+            ]
+          },
+          {
+            title: "Cold Coffee & Shakes",
+            note: "Add a scoop of ice cream for ₹29",
+            items: [
+              { name: "Classic Cold Coffee", price: "109", veg: true, available: true }
+            ]
+          },
+          {
+            title: "Tea Special",
+            items: [
+              { name: "Milk Tea", price: "20 / 30", veg: true, available: true },
+              { name: "Kullad Chai", price: "25", veg: true, available: true },
+              { name: "Ginger Tea", price: "25", veg: true, available: true },
+              { name: "Masala Chai", price: "30", veg: true, available: true },
+              { name: "Black Tea", price: "20", veg: true, available: true }
+            ]
+          }
+        ]
+      },
+      {
+        id: "momos",
+        label: "Momos",
+        groups: [
+          {
+            title: "Momos (6 pcs)",
+            items: [
+              { name: "Veg Momo", price: "79", veg: true, available: true },
+              { name: "Chicken Momo", price: "99", veg: false, available: true },
+              { name: "Chicken Fried Momo", price: "119", veg: false, available: true },
+              { name: "Gandharaj Momo", price: "129", veg: false, available: true, description: "Kolkata fragrant gondhoraj lime twist" }
+            ]
+          }
+        ]
+      },
+      {
+        id: "burgers",
+        label: "Burgers & Sandwiches",
+        groups: [
+          {
+            title: "Burgers",
+            items: [
+              { name: "Aloo Tikki Burger", price: "79", veg: true, available: true },
+              { name: "Aloo Tikki Cheese Burger", price: "89", veg: true, available: true },
+              { name: "Chicken Burger", price: "99", veg: false, available: true },
+              { name: "Chicken Cheese Burger", price: "109", veg: false, available: true }
+            ]
+          },
+          {
+            title: "Sandwiches",
+            items: [
+              { name: "Veg Sandwich", price: "89", veg: true, available: true },
+              { name: "Paneer Tikka Sandwich", price: "109", veg: true, available: true },
+              { name: "Chicken Sandwich", price: "119", veg: false, available: true }
+            ]
+          }
+        ]
+      },
+      {
+        id: "pizza",
+        label: '8" Pizzas',
+        groups: [
+          {
+            title: "Pizza Menu (8 inch)",
+            items: [
+              { name: "Classic Margherita Pizza", price: "179", veg: true, available: true },
+              { name: "Farmhouse Pizza", price: "219", veg: true, available: true },
+              { name: "Peri Peri Chicken Pizza", price: "249", veg: false, available: true }
+            ]
+          }
+        ]
+      },
+      {
+        id: "starters",
+        label: "Starters & Specials",
+        groups: [
+          {
+            title: "Non-Veg Specials",
+            items: [
+              { name: "Chicken Pakora", price: "120", veg: false, available: true },
+              { name: "Chicken 65", price: "129", veg: false, available: true },
+              { name: "Fish Fry (2 pcs)", price: "129", veg: false, available: true }
+            ]
+          },
+          {
+            title: "Sides",
+            items: [
+              { name: "French Fries", price: "99", veg: true, available: true }
+            ]
+          }
+        ]
+      }
+    ],
+    schedule: [
+      { day: "Monday", dayIndex: 1, hours: "Closed", isClosed: true },
+      { day: "Tuesday", dayIndex: 2, hours: "5:00 PM – 10:30 PM", isClosed: false, openMinutes: 1020, closeMinutes: 1350, openDisplay: "5:00 PM", closeDisplay: "10:30 PM" },
+      { day: "Wednesday", dayIndex: 3, hours: "5:00 PM – 10:30 PM", isClosed: false, openMinutes: 1020, closeMinutes: 1350, openDisplay: "5:00 PM", closeDisplay: "10:30 PM" },
+      { day: "Thursday", dayIndex: 4, hours: "5:00 PM – 10:30 PM", isClosed: false, openMinutes: 1020, closeMinutes: 1350, openDisplay: "5:00 PM", closeDisplay: "10:30 PM" },
+      { day: "Friday", dayIndex: 5, hours: "5:00 PM – 10:30 PM", isClosed: false, openMinutes: 1020, closeMinutes: 1350, openDisplay: "5:00 PM", closeDisplay: "10:30 PM" },
+      { day: "Saturday", dayIndex: 6, hours: "5:00 PM – 10:30 PM", isClosed: false, openMinutes: 1020, closeMinutes: 1350, openDisplay: "5:00 PM", closeDisplay: "10:30 PM" },
+      { day: "Sunday", dayIndex: 0, hours: "5:00 PM – 10:30 PM", isClosed: false, openMinutes: 1020, closeMinutes: 1350, openDisplay: "5:00 PM", closeDisplay: "10:30 PM" }
+    ],
+    galleryItems: [
+      { id: "storefront-night", title: "Aromica Under the Lights", category: "storefront", caption: "Storefront at dusk on Boral Main Road", src: "/images/aromica-exterior-drinks-01.webp", alt: "AROMICA storefront at night", width: 1200, height: 900 },
+      { id: "interior-arches", title: "Green Arches & Warm Glow", category: "interior", caption: "Cozy seating with painted green arches", src: "/images/aromica-interior-01.webp", alt: "Interior seating", width: 1200, height: 900 }
+    ],
+    reviews: [
+      { id: "rev-1", author: "Poulomi S.", rating: 5, date: "2 weeks ago", text: "Great neighborhood spot near Boral High School. The Gandharaj momos are super fragrant!", source: "Google" }
+    ]
+  };
+}
+
+function validateSnapshotPayload(payload) {
+  if (!payload || typeof payload !== "object") {
+    return { valid: false, reason: "Payload must be a non-empty object" };
+  }
+  if (!Array.isArray(payload.menuCategories)) {
+    return { valid: false, reason: "menuCategories must be an array" };
+  }
+  if (payload.menuCategories.length > 50) {
+    return { valid: false, reason: "menuCategories exceeds maximum allowed limit of 50" };
+  }
+
+  for (let c = 0; c < payload.menuCategories.length; c++) {
+    const cat = payload.menuCategories[c];
+    if (!cat || typeof cat !== "object") {
+      return { valid: false, reason: `Category at index ${c} must be an object` };
+    }
+    if (typeof cat.id !== "string" || cat.id.length === 0 || cat.id.length > 100) {
+      return { valid: false, reason: `Category at index ${c} has invalid id` };
+    }
+    if (typeof cat.label !== "string" || cat.label.length === 0 || cat.label.length > 100) {
+      return { valid: false, reason: `Category at index ${c} has invalid label` };
+    }
+    if (!Array.isArray(cat.groups) || cat.groups.length > 50) {
+      return { valid: false, reason: `Category '${cat.id}' groups must be an array (max 50)` };
+    }
+
+    for (let g = 0; g < cat.groups.length; g++) {
+      const grp = cat.groups[g];
+      if (!grp || typeof grp !== "object") {
+        return { valid: false, reason: `Group at index ${g} in category '${cat.id}' must be an object` };
+      }
+      if (typeof grp.title !== "string" || grp.title.length > 100) {
+        return { valid: false, reason: `Group at index ${g} in category '${cat.id}' has invalid title` };
+      }
+      if (!Array.isArray(grp.items) || grp.items.length > 100) {
+        return { valid: false, reason: `Group '${grp.title}' items must be an array (max 100)` };
+      }
+
+      for (let i = 0; i < grp.items.length; i++) {
+        const item = grp.items[i];
+        if (!item || typeof item !== "object") {
+          return { valid: false, reason: `Item at index ${i} in group '${grp.title}' must be an object` };
+        }
+        if (typeof item.name !== "string" || item.name.trim().length === 0 || item.name.length > 120) {
+          return { valid: false, reason: `Item at index ${i} in group '${grp.title}' has invalid name` };
+        }
+        if (typeof item.price !== "string" && typeof item.price !== "number") {
+          return { valid: false, reason: `Item '${item.name}' has invalid price type` };
+        }
+        if (String(item.price).length > 40) {
+          return { valid: false, reason: `Item '${item.name}' has excessive price string length` };
+        }
+        if (typeof item.available !== "undefined" && typeof item.available !== "boolean") {
+          return { valid: false, reason: `Item '${item.name}' available property must be a boolean` };
+        }
+      }
+    }
+  }
+
+  return { valid: true };
+}
+
+function readRequestBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = "";
+    let exceeded = false;
+
+    req.on("data", (chunk) => {
+      if (exceeded) return;
+      body += chunk;
+      if (body.length > MAX_PAYLOAD_SIZE) {
+        exceeded = true;
+        reject(new Error("PAYLOAD_TOO_LARGE"));
+      }
+    });
+
+    req.on("end", () => {
+      if (!exceeded) resolve(body);
+    });
+
+    req.on("error", (err) => reject(err));
+  });
+}
+
+export default async function handler(req, res) {
+  const origin = req.headers.origin;
+
+  // 1. Strict Origin Validation
+  if (origin) {
+    if (!isOriginAllowed(origin)) {
+      res.writeHead(403, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Forbidden: Disallowed cross-origin request" }));
+      return;
+    }
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-demo-auth");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+  } else {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+  }
+
+  // 2. Preflight OPTIONS Handling
+  if (req.method === "OPTIONS") {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
+  // 3. Method Whitelisting
+  if (req.method !== "GET" && req.method !== "POST") {
+    res.writeHead(405, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Method Not Allowed" }));
+    return;
+  }
+
+  const clientIp = (req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "127.0.0.1").split(",")[0].trim();
+  const upstashUrl = process.env.UPSTASH_REDIS_REST_URL;
+  const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const serverPasskey = process.env.DEMO_SYNC_PASSKEY;
+
+  // 4. GET Handler (Public Read)
+  if (req.method === "GET") {
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+
+    if (!upstashUrl || !upstashToken) {
+      // Explicit 503 so client knows cloud persistence is unconfigured without masking it as fresh data
+      res.writeHead(503, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Cloud demo storage is not configured on the server." }));
+      return;
+    }
+
+    try {
+      const redisRes = await fetch(`${upstashUrl}/get/aromica_demo_snapshot`, {
+        headers: { Authorization: `Bearer ${upstashToken}` },
+      });
+
+      if (!redisRes.ok) {
+        res.writeHead(503, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Cloud demo storage is temporarily unreachable." }));
+        return;
+      }
+
+      const data = await redisRes.json();
+      if (data && data.result) {
+        const parsed = typeof data.result === "string" ? JSON.parse(data.result) : data.result;
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(parsed));
+        return;
+      }
+
+      // First time initialization: key does not exist yet in Redis
+      const baseline = getBaselineSnapshot();
+      res.setHeader("x-demo-initial", "true");
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(baseline));
+      return;
+    } catch {
+      res.writeHead(503, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Unexpected cloud storage network failure." }));
+      return;
+    }
+  }
+
+  // 5. POST Authorization Check
+  const authHeader = req.headers["x-demo-auth"];
+  if (!serverPasskey || authHeader !== serverPasskey) {
+    res.writeHead(401, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Unauthorized: Valid demo authorization passkey required." }));
+    return;
+  }
+
+  // Rate Limiting check on mutation endpoints
+  if (!checkRateLimit(clientIp)) {
+    res.writeHead(429, {
+      "Content-Type": "application/json",
+      "Retry-After": "60",
+    });
+    res.end(JSON.stringify({ error: "Too Many Requests: Rate limit exceeded for snapshot mutations" }));
+    return;
+  }
+
+  // Check Content-Type
+  const contentType = req.headers["content-type"] || "";
+  if (!contentType.includes("application/json")) {
+    res.writeHead(415, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Unsupported Media Type: Content-Type must be application/json" }));
+    return;
+  }
+
+  // Check early Content-Length header
+  const contentLength = Number(req.headers["content-length"]);
+  if (contentLength && contentLength > MAX_PAYLOAD_SIZE) {
+    res.writeHead(413, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Payload Too Large: Max snapshot size is 1MB" }));
+    return;
+  }
+
+  if (!upstashUrl || !upstashToken) {
+    res.writeHead(503, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Cloud demo storage is not configured on the server." }));
+    return;
+  }
+
+  // Parse body
+  let rawBody;
+  try {
+    rawBody = await readRequestBody(req);
+  } catch (err) {
+    if (err.message === "PAYLOAD_TOO_LARGE") {
+      res.writeHead(413, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Payload Too Large: Max snapshot size is 1MB" }));
+      return;
+    }
+    res.writeHead(400, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Failed to read request body" }));
+    return;
+  }
+
+  let parsedPayload = {};
+  if (rawBody && rawBody.trim().length > 0) {
+    try {
+      parsedPayload = JSON.parse(rawBody);
+    } catch {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Malformed JSON payload" }));
+      return;
+    }
+  }
+
+  const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
+  const isReset = url.searchParams.get("action") === "reset" || parsedPayload.reset === true;
+
+  // 6. Reset Operation (Restores Canonical Baseline)
+  if (isReset) {
+    const baseline = getBaselineSnapshot();
+    baseline.updatedAt = Date.now();
+
+    try {
+      const upstashRes = await fetch(`${upstashUrl}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${upstashToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(["SET", "aromica_demo_snapshot", JSON.stringify(baseline)]),
+      });
+
+      if (!upstashRes.ok) {
+        res.writeHead(503, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Failed to persist reset to cloud storage." }));
+        return;
+      }
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ success: true, reset: true, snapshot: baseline }));
+      return;
+    } catch {
+      res.writeHead(503, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Failed to communicate with cloud storage during reset." }));
+      return;
+    }
+  }
+
+  // 7. Save Mutation Operation
+  const validation = validateSnapshotPayload(parsedPayload);
+  if (!validation.valid) {
+    res.writeHead(400, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: `Invalid snapshot payload: ${validation.reason}` }));
+    return;
+  }
+
+  const updatedSnapshot = {
+    ...parsedPayload,
+    updatedAt: Date.now(),
+  };
+
+  try {
+    const upstashRes = await fetch(`${upstashUrl}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${upstashToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(["SET", "aromica_demo_snapshot", JSON.stringify(updatedSnapshot)]),
+    });
+
+    if (!upstashRes.ok) {
+      res.writeHead(503, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Failed to persist snapshot to cloud storage." }));
+      return;
+    }
+
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ success: true, updatedAt: updatedSnapshot.updatedAt }));
+    return;
+  } catch {
+    res.writeHead(503, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Failed to communicate with cloud storage during save." }));
+    return;
+  }
+}
+
+export {
+  handler,
+  validateSnapshotPayload,
+  checkRateLimit,
+  getBaselineSnapshot,
+  isOriginAllowed,
+  writeRateLimiter,
+  MAX_PAYLOAD_SIZE,
+};

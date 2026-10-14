@@ -10,7 +10,7 @@
     "build": "tsc -b && vite build",
     "build:dashboard": "vite build --config apps/owner-dashboard/vite.config.ts",
     "lint": "oxlint",
-    "test": "node --experimental-strip-types --test tests/menuValidation.test.ts tests/rlsPoliciesAndIsolation.test.ts tests/dashboardWorkflow.test.ts tests/publicSyncAndFallback.test.ts tests/mediaManagement.test.ts tests/activityAudit.test.ts tests/menuCrudAndSync.test.ts tests/productionReadiness.test.ts tests/dataSafetyAndSafeguards.test.ts tests/backendHardeningAndSecurity.test.ts",
+    "test": "node --experimental-strip-types --test tests/menuValidation.test.ts tests/rlsPoliciesAndIsolation.test.ts tests/dashboardWorkflow.test.ts tests/publicSyncAndFallback.test.ts tests/mediaManagement.test.ts tests/activityAudit.test.ts tests/menuCrudAndSync.test.ts tests/productionReadiness.test.ts tests/dataSafetyAndSafeguards.test.ts tests/backendHardeningAndSecurity.test.ts tests/demoCloudSync.test.ts",
     "preview": "vite preview"
   },
   "dependencies": {

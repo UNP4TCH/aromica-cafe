@@ -2,10 +2,13 @@
  * Shared Demo Data Synchronization Service
  * 
  * Provides a unified, versioned, synchronized storage layer for Interactive Portfolio Simulation Mode.
- * Communicates with the local demo sync HTTP server (http://127.0.0.1:5176) to bridge
- * the separate origins of the Public Website (5173) and Owner Dashboard (5174).
+ * Communicates with either:
+ *  1. Local demo sync HTTP server (http://127.0.0.1:5176) for local development.
+ *  2. Cloud serverless sync endpoint (/api/demo-sync or https://aromica-cafe.vercel.app/api/demo-sync)
+ *     backed by Upstash Redis REST for deployed portfolio demonstrations.
  * 
- * Falls back gracefully to localStorage and in-memory storage if the server is unreachable.
+ * Falls back gracefully to localStorage and in-memory storage if the remote sync is unreachable.
+ * Never overwrites local cache with baseline data upon remote failure.
  */
 
 import type {
@@ -39,13 +42,51 @@ export const DEMO_SYNC_CHANNEL_NAME = "aromica_demo_sync_channel";
 
 const CURRENT_VERSION = 1;
 
+export interface SyncConfig {
+  isCloud: boolean;
+  url: string;
+  authPasskey?: string;
+}
+
 /**
- * Checks if the local background sync service (http://127.0.0.1:5176) is reachable.
+ * Resolves the appropriate sync endpoint and authorization token depending on environment.
+ */
+export function getSyncConfig(): SyncConfig {
+  const envUrl = typeof import.meta !== "undefined" && import.meta.env?.VITE_DEMO_SYNC_URL;
+  const envPasskey = typeof import.meta !== "undefined" && import.meta.env?.VITE_DEMO_SYNC_PASSKEY;
+
+  if (envUrl) {
+    const isCloud = envUrl.includes("/api/demo-sync") || !envUrl.includes(":5176");
+    return { isCloud, url: envUrl, authPasskey: envPasskey || "" };
+  }
+
+  if (typeof window !== "undefined" && window.location) {
+    const host = window.location.hostname;
+    if (host === "localhost" || host === "127.0.0.1") {
+      return { isCloud: false, url: "http://127.0.0.1:5176" };
+    }
+    if (host.includes("aromica-cafe.vercel.app")) {
+      return { isCloud: true, url: "/api/demo-sync", authPasskey: envPasskey || "" };
+    }
+    return {
+      isCloud: true,
+      url: "https://aromica-cafe.vercel.app/api/demo-sync",
+      authPasskey: envPasskey || "",
+    };
+  }
+
+  return { isCloud: false, url: "http://127.0.0.1:5176" };
+}
+
+/**
+ * Checks if the background sync service is reachable.
  */
 export async function checkSyncServerHealth(): Promise<boolean> {
   try {
     if (typeof fetch === "undefined") return false;
-    const res = await fetch(`${DEMO_SYNC_SERVER_URL}/health`, { method: "GET" });
+    const { isCloud, url } = getSyncConfig();
+    const endpoint = isCloud ? url : `${url}/health`;
+    const res = await fetch(endpoint, { method: "GET" });
     return res.ok;
   } catch {
     return false;
@@ -115,8 +156,9 @@ export function getDemoSnapshot(): DemoSnapshot {
 let inFlightSnapshotFetch: Promise<DemoSnapshot> | null = null;
 
 /**
- * Asynchronous getter: Pulls latest snapshot from the local synchronization service.
+ * Asynchronous getter: Pulls latest snapshot from the active synchronization service.
  * In-flight requests are deduplicated to prevent redundant network traffic under high concurrency.
+ * If the remote service fails (e.g. 503 or network issue), preserves existing local cache.
  */
 export async function fetchRemoteDemoSnapshot(): Promise<DemoSnapshot> {
   if (inFlightSnapshotFetch) {
@@ -125,7 +167,9 @@ export async function fetchRemoteDemoSnapshot(): Promise<DemoSnapshot> {
 
   inFlightSnapshotFetch = (async (): Promise<DemoSnapshot> => {
     try {
-      const res = await fetch(`${DEMO_SYNC_SERVER_URL}/api/snapshot`, {
+      const { isCloud, url } = getSyncConfig();
+      const endpoint = isCloud ? url : `${url}/api/snapshot`;
+      const res = await fetch(endpoint, {
         method: "GET",
         headers: { "Accept": "application/json" },
       });
@@ -138,7 +182,7 @@ export async function fetchRemoteDemoSnapshot(): Promise<DemoSnapshot> {
         }
       }
     } catch {
-      // If server is not running, fall back to local snapshot
+      // If server is not reachable, do NOT overwrite cache with baseline. Fall back to local snapshot.
     }
     return getDemoSnapshot();
   })().finally(() => {
@@ -151,9 +195,10 @@ export async function fetchRemoteDemoSnapshot(): Promise<DemoSnapshot> {
 /**
  * Persists the demo snapshot:
  * 1. Writes to memory / localStorage immediately.
- * 2. Asynchronously POSTs to the local synchronization server (http://127.0.0.1:5176).
+ * 2. Asynchronously POSTs to the active sync endpoint with authorization if required.
  * 3. Broadcasts via BroadcastChannel and window CustomEvent.
  * 4. Invalidates cached public content to ensure instant propagation.
+ * Enforces Requirement 5: Public website cannot write or reset through frontend.
  */
 export function saveDemoSnapshot(snapshot: DemoSnapshot): void {
   const toSave: DemoSnapshot = {
@@ -173,12 +218,26 @@ export function saveDemoSnapshot(snapshot: DemoSnapshot): void {
     }
   }
 
-  // Post to local demo sync server in the background
+  // Post to sync endpoint in background
   try {
     if (typeof fetch !== "undefined") {
-      void fetch(`${DEMO_SYNC_SERVER_URL}/api/snapshot`, {
+      const { isCloud, url, authPasskey } = getSyncConfig();
+
+      // Enforce Requirement 5: In cloud environment without authorization passkey,
+      // mutations from frontend are completely disabled.
+      if (isCloud && !authPasskey) {
+        return;
+      }
+
+      const endpoint = isCloud ? url : `${url}/api/snapshot`;
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (isCloud && authPasskey) {
+        headers["x-demo-auth"] = authPasskey;
+      }
+
+      void fetch(endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(toSave),
       }).catch(() => {
         // Safe silent catch if server is unreachable
@@ -223,7 +282,20 @@ export async function resetDemoSnapshotRemote(): Promise<DemoSnapshot> {
 
   try {
     if (typeof fetch !== "undefined") {
-      await fetch(`${DEMO_SYNC_SERVER_URL}/api/reset`, { method: "POST" });
+      const { isCloud, url, authPasskey } = getSyncConfig();
+
+      if (!isCloud) {
+        await fetch(`${url}/api/reset`, { method: "POST" });
+      } else if (authPasskey) {
+        await fetch(`${url}?action=reset`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-demo-auth": authPasskey,
+          },
+          body: JSON.stringify({ reset: true }),
+        });
+      }
     }
   } catch {
     // Server fallback
@@ -241,8 +313,8 @@ export function resetDemoSnapshot(): DemoSnapshot {
 
 /**
  * Subscribes to live synchronization events across both applications.
- * Uses Server-Sent Events (SSE) from the local sync server, supplemented
- * by BroadcastChannel, storage events, and window CustomEvents.
+ * Uses Server-Sent Events (SSE) when connected to local server, supplemented
+ * by BroadcastChannel, storage events, window CustomEvents, and focus/visibility revalidation.
  */
 export function subscribeToDemoSync(callback: (snapshot: DemoSnapshot) => void): () => void {
   if (typeof window === "undefined") return () => {};
@@ -251,45 +323,63 @@ export function subscribeToDemoSync(callback: (snapshot: DemoSnapshot) => void):
   let broadcastChannel: BroadcastChannel | null = null;
   let pollInterval: ReturnType<typeof setInterval> | null = null;
 
+  const { isCloud, url } = getSyncConfig();
+
   // 1. Initial fetch from remote sync server
   void fetchRemoteDemoSnapshot().then((fresh) => {
     callback(fresh);
   });
 
-  // 2. Connect to Server-Sent Events (SSE) for instant cross-origin push
-  try {
-    if (typeof EventSource !== "undefined") {
-      eventSource = new EventSource(`${DEMO_SYNC_SERVER_URL}/api/events`);
-      eventSource.onmessage = (event) => {
-        try {
-          const parsed = JSON.parse(event.data);
-          if (parsed && parsed.type === "SYNC_UPDATE") {
-            void fetchRemoteDemoSnapshot().then((updated) => {
-              callback(updated);
-            });
+  // 2. Local SSE connection if running on local sync server
+  if (!isCloud) {
+    try {
+      if (typeof EventSource !== "undefined") {
+        eventSource = new EventSource(`${url}/api/events`);
+        eventSource.onmessage = (event) => {
+          try {
+            const parsed = JSON.parse(event.data);
+            if (parsed && parsed.type === "SYNC_UPDATE") {
+              void fetchRemoteDemoSnapshot().then((updated) => {
+                callback(updated);
+              });
+            }
+          } catch {
+            // Ignore parse errors
           }
-        } catch {
-          // Ignore parse errors
-        }
-      };
-      eventSource.onerror = () => {
-        // SSE reconnects automatically
-      };
+        };
+        eventSource.onerror = () => {
+          // SSE reconnects automatically
+        };
+      }
+    } catch {
+      // EventSource not supported
     }
-  } catch {
-    // EventSource not supported
   }
 
-  // 3. Fallback polling every 2 seconds to guarantee sync even if SSE dropped
+  // 3. Polling interval (2s for local, 3s for cloud) to guarantee sync
   pollInterval = setInterval(() => {
     void fetchRemoteDemoSnapshot().then((remote) => {
       if (remote.updatedAt > latestCachedSnapshot.updatedAt) {
         callback(remote);
       }
     });
-  }, 2000);
+  }, isCloud ? 3000 : 2000);
 
-  // 4. Local Window and Tab Listeners
+  // 4. Instant revalidation on tab focus or visibility change (crucial for cross-tab cloud sync)
+  const handleVisibilityOrFocus = () => {
+    if (typeof document !== "undefined" && document.visibilityState === "visible") {
+      void fetchRemoteDemoSnapshot().then((remote) => {
+        if (remote.updatedAt > latestCachedSnapshot.updatedAt) {
+          callback(remote);
+        }
+      });
+    }
+  };
+
+  window.addEventListener("focus", handleVisibilityOrFocus);
+  window.addEventListener("visibilitychange", handleVisibilityOrFocus);
+
+  // 5. Local Window and Tab Listeners
   const handleCustomEvent = (e: Event) => {
     const custom = e as CustomEvent<{ snapshot: DemoSnapshot }>;
     if (custom.detail?.snapshot) {
@@ -327,6 +417,8 @@ export function subscribeToDemoSync(callback: (snapshot: DemoSnapshot) => void):
   }
 
   return () => {
+    window.removeEventListener("focus", handleVisibilityOrFocus);
+    window.removeEventListener("visibilitychange", handleVisibilityOrFocus);
     window.removeEventListener("aromica:demo-synced", handleCustomEvent);
     window.removeEventListener("storage", handleStorageEvent);
     if (broadcastChannel) {
