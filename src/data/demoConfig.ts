@@ -63,15 +63,15 @@ export const demoConfig: DemoConfig = {
   },
 
   secondaryContact: {
-    name: "Tuhimrahamain",
+    name: "Sohom Das",
     role: "Client Relations & Strategy",
-    phone: "+91 7439077643",
-    phoneRaw: "917439077643",
-    phoneHref: "tel:+917439077643",
-    email: "tuhimrahamain@gmail.com",
-    emailHref: "mailto:tuhimrahamain@gmail.com",
+    phone: "+91 8100249618",
+    phoneRaw: "918100249618",
+    phoneHref: "tel:+918100249618",
+    email: "sohomdas62@gmail.com",
+    emailHref: "mailto:sohomdas62@gmail.com",
     whatsappHref:
-      "https://wa.me/917439077643?text=Hi%20Tuhim%2C%20I%20saw%20your%20Aromica%20Caf%C3%A9%20website%20concept%20and%20would%20like%20to%20discuss%20a%20website.",
+      "https://wa.me/918100249618?text=Hi%20Sohom%2C%20I%20saw%20your%20Aromica%20Caf%C3%A9%20website%20concept%20and%20would%20like%20to%20discuss%20a%20website.",
   },
 
   attribution: {

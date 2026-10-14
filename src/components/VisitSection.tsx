@@ -206,7 +206,7 @@ export function VisitSection() {
                   </div>
                 </div>
 
-                {/* Secondary: Tuhimrahamain */}
+                {/* Secondary: Sohom Das */}
                 <div className="rounded-xl border border-coffee/15 bg-cream-2/40 p-3.5">
                   <p className="text-xs font-semibold text-primary">
                     {demoConfig.secondaryContact.name}

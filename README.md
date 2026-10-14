@@ -9,7 +9,7 @@ A unified, editorial single-page website concept for **Aromica Café** (near Bor
 The project includes a centralized, toggleable demo configuration architecture:
 - `demoConfig.enabled`: When `true`, automatically activates subtle demo attributions, editorial photo watermarks, and agency sales contact areas (`tel:` / `mailto:`).
 - `demoConfig.owner`: Project creator and demo owner (**Susmit Dey**).
-- `demoConfig.secondaryContact`: Agency sales and inquiry contact point (**Tuhimrahamain**).
+- `demoConfig.secondaryContact`: Agency sales and inquiry contact point (**Sohom Das**).
 - When `demoConfig.enabled` is switched to `false` for a live client deployment, all demo watermarks, attributions, and agency contacts cleanly disappear and revert to client configuration.
 
 ---

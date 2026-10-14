@@ -155,7 +155,7 @@ export function DemoContactSection() {
                 </div>
               </div>
 
-              {/* Secondary Contact: Tuhimrahamain */}
+              {/* Secondary Contact: Sohom Das */}
               <div className="rounded-2xl border border-paper/15 bg-espresso/80 p-4 sm:p-5 shadow-xs">
                 <div className="flex items-center justify-between">
                   <span className="rounded bg-paper/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-paper/70">
