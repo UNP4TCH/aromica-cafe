@@ -1,12 +1,13 @@
 import { Clock3, MapPin, MessageCircle, Phone, ShoppingBag, Sparkles } from "lucide-react";
-import { cafe } from "@/data/cafe";
 import { demoConfig } from "@/data/demoConfig";
 import { openOrderDemoModal } from "@/lib/demoModal";
 import { OpenStatusBadge } from "./OpenStatusBadge";
 import { useScrollReveal } from "@/lib/useScrollReveal";
+import { useBusinessContent } from "@/context/PublicBusinessContext";
 
 export function QuickInfoStrip() {
   const { ref, isRevealed } = useScrollReveal();
+  const { cafe, schedule } = useBusinessContent();
 
   const handleOrderClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (demoConfig.enabled && demoConfig.externalActions.demoMode) {
@@ -39,7 +40,7 @@ export function QuickInfoStrip() {
               Hours &amp; Status
             </p>
             <div className="mt-1.5">
-              <OpenStatusBadge />
+              <OpenStatusBadge schedule={schedule} />
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
               {cafe.hours.summary}

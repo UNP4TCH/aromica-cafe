@@ -1,11 +1,12 @@
 import { ArrowRight, MessageCircle, ShoppingBag } from "lucide-react";
-import { cafe } from "@/data/cafe";
 import { demoConfig } from "@/data/demoConfig";
 import { openOrderDemoModal } from "@/lib/demoModal";
 import { useScrollReveal } from "@/lib/useScrollReveal";
+import { useBusinessContent } from "@/context/PublicBusinessContext";
 
 export function OrderSection() {
   const { ref, isRevealed } = useScrollReveal();
+  const { cafe } = useBusinessContent();
 
   const handleOrderClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (demoConfig.enabled && demoConfig.externalActions.demoMode) {

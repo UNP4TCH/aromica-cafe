@@ -4,12 +4,17 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --port 5173",
+    "dev:dashboard": "vite --config apps/owner-dashboard/vite.config.ts --port 5174",
+    "sync-server": "node server/demoSyncServer.js",
     "build": "tsc -b && vite build",
+    "build:dashboard": "vite build --config apps/owner-dashboard/vite.config.ts",
     "lint": "oxlint",
+    "test": "node --experimental-strip-types --test tests/menuValidation.test.ts tests/rlsPoliciesAndIsolation.test.ts tests/dashboardWorkflow.test.ts tests/publicSyncAndFallback.test.ts tests/mediaManagement.test.ts tests/activityAudit.test.ts tests/menuCrudAndSync.test.ts tests/productionReadiness.test.ts tests/dataSafetyAndSafeguards.test.ts tests/backendHardeningAndSecurity.test.ts",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.117.3",
     "clsx": "^2.1.1",
     "lucide-react": "^1.48.0",
     "react": "^19.2.8",

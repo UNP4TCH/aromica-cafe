@@ -1,9 +1,10 @@
 import { BookOpen, MapPin, MessageCircle, Phone, ShoppingBag, Sparkles } from "lucide-react";
-import { cafe } from "@/data/cafe";
 import { demoConfig } from "@/data/demoConfig";
 import { openOrderDemoModal } from "@/lib/demoModal";
+import { useBusinessContent } from "@/context/PublicBusinessContext";
 
 export function MobileActionBar() {
+  const { cafe } = useBusinessContent();
   const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith("#")) {
       e.preventDefault();

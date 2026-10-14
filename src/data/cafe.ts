@@ -1,17 +1,29 @@
-export { demoConfig } from "./demoConfig";
+import type {
+  BusinessContentContract,
+  BusinessProfileContract,
+  DayHoursContract,
+  GalleryItemContract,
+  MenuCategoryContract,
+  MenuGroupContract,
+  MenuItemContract,
+  ReviewItemContract,
+  WeeklyScheduleContract,
+} from "../types/business.ts";
 
-export interface DayHours {
-  day: string;
-  hours: string;
-  isClosed: boolean;
-  dayIndex: number; // 0=Sunday, 1=Monday, etc.
-  openMinutes?: number;
-  closeMinutes?: number;
-  openDisplay?: string;
-  closeDisplay?: string;
-}
+export { demoConfig } from "./demoConfig.ts";
+export * from "../types/business.ts";
 
-export const weeklySchedule: DayHours[] = [
+export type DayHours = DayHoursContract;
+export type WeeklySchedule = WeeklyScheduleContract;
+export type MenuItem = MenuItemContract;
+export type MenuGroup = MenuGroupContract;
+export type MenuCategory = MenuCategoryContract;
+export type GalleryItem = GalleryItemContract;
+export type ReviewItem = ReviewItemContract;
+export type BusinessProfile = BusinessProfileContract;
+export type BusinessContent = BusinessContentContract;
+
+export const weeklySchedule: DayHoursContract[] = [
   { day: "Monday", hours: "Closed", isClosed: true, dayIndex: 1 },
   {
     day: "Tuesday",
@@ -171,27 +183,7 @@ export const cafe = {
     closedDaySummary: "Monday: Closed",
     weekly: weeklySchedule,
   },
-} as const;
-
-export interface MenuItem {
-  name: string;
-  price: string;
-  veg: boolean;
-  description?: string;
-  note?: string;
-}
-
-export interface MenuGroup {
-  title: string;
-  note?: string;
-  items: MenuItem[];
-}
-
-export interface MenuCategory {
-  id: string;
-  label: string;
-  groups: MenuGroup[];
-}
+};
 
 const v = (name: string, price: string, extra: Partial<MenuItem> = {}): MenuItem => ({
   name,
@@ -430,17 +422,7 @@ export const menuCategories: MenuCategory[] = [
   },
 ];
 
-export interface GalleryItem {
-  id: string;
-  src: string;
-  alt: string;
-  caption: string;
-  category?: string;
-  tall?: boolean;
-  aspectClass?: string;
-}
-
-export const galleryItems: GalleryItem[] = [
+export const galleryItems: GalleryItemContract[] = [
   {
     id: "crispy-snack",
     src: "/images/aromica-crispy-snack-01.webp",
@@ -534,11 +516,17 @@ export const galleryItems: GalleryItem[] = [
 ];
 
 // Reserved reviews architecture for when verified reviews are provided
-export interface ReviewItem {
-  id: string;
-  author: string;
-  text: string;
-  date?: string;
-}
+export const verifiedReviews: ReviewItemContract[] = [];
 
-export const verifiedReviews: ReviewItem[] = [];
+/**
+ * Canonical Business Content bundle for Aromica Café
+ * Conforms to BusinessContentContract for future API and database persistence.
+ */
+export const aromicaBusinessContent: BusinessContentContract = {
+  slug: "aromica-cafe",
+  version: "1.0.0",
+  profile: cafe,
+  menuCategories,
+  galleryItems,
+  reviews: verifiedReviews,
+};

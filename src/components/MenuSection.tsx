@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BookOpen, Search, ShoppingBag, X } from "lucide-react";
-import { cafe, menuCategories, type MenuCategory, type MenuGroup, type MenuItem } from "@/data/cafe";
+import type { MenuCategory, MenuGroup, MenuItem } from "@/data/cafe";
 import { demoConfig } from "@/data/demoConfig";
 import { openOrderDemoModal } from "@/lib/demoModal";
 import { cn } from "@/lib/utils";
 import { useScrollReveal } from "@/lib/useScrollReveal";
-
-const DEFAULT_CATEGORY = menuCategories[0]?.id || "";
+import { useBusinessContent } from "@/context/PublicBusinessContext";
 
 function matchesQuery(item: MenuItem, q: string): boolean {
   const query = q.toLowerCase();
@@ -18,10 +17,17 @@ function matchesQuery(item: MenuItem, q: string): boolean {
 }
 
 export function MenuSection() {
+  const { menuCategories, cafe } = useBusinessContent();
   const { ref: headerRevealRef, isRevealed: isHeaderRevealed } = useScrollReveal();
-  const [activeCategory, setActiveCategory] = useState<string>(DEFAULT_CATEGORY);
+  const [activeCategory, setActiveCategory] = useState<string>(() => menuCategories[0]?.id || "beverages");
   const [searchQuery, setSearchQuery] = useState("");
   const [vegOnly, setVegOnly] = useState(false);
+
+  useEffect(() => {
+    if (!menuCategories.some((c) => c.id === activeCategory) && menuCategories.length > 0) {
+      setActiveCategory(menuCategories[0].id);
+    }
+  }, [menuCategories, activeCategory]);
 
   const handleOrderClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (demoConfig.enabled && demoConfig.externalActions.demoMode) {
@@ -36,35 +42,35 @@ export function MenuSection() {
   const pendingScrollRef = useRef<string | null>(null);
 
   const tabs = useMemo(
-    () => menuCategories.map((c) => ({ id: c.id, label: c.label })),
-    []
+    () => (menuCategories || []).map((c) => ({ id: c.id, label: c.label })),
+    [menuCategories]
   );
 
   const filteredCategories = useMemo<MenuCategory[]>(() => {
     const q = searchQuery.trim();
     const source = q
-      ? menuCategories
-      : menuCategories.filter((c) => c.id === activeCategory);
+      ? (menuCategories || [])
+      : (menuCategories || []).filter((c) => c.id === activeCategory);
 
     return source
       .map((cat) => ({
         ...cat,
-        groups: cat.groups
+        groups: (cat.groups || [])
           .map((group) => ({
             ...group,
-            items: group.items.filter((item) => {
+            items: (group.items || []).filter((item) => {
               if (vegOnly && !item.veg) return false;
               if (q && !matchesQuery(item, q)) return false;
               return true;
             }),
           }))
-          .filter((group) => group.items.length > 0),
+          .filter((group) => (group.items || []).length > 0),
       }))
-      .filter((cat) => cat.groups.length > 0);
-  }, [activeCategory, searchQuery, vegOnly]);
+      .filter((cat) => (cat.groups || []).length > 0);
+  }, [menuCategories, activeCategory, searchQuery, vegOnly]);
 
   const totalFilteredItems = filteredCategories.reduce(
-    (total, cat) => total + cat.groups.reduce((subTotal, g) => subTotal + g.items.length, 0),
+    (total, cat) => total + (cat.groups || []).reduce((subTotal, g) => subTotal + (g.items || []).length, 0),
     0
   );
 
@@ -309,7 +315,7 @@ export function MenuSection() {
               onClick={() => {
                 setSearchQuery("");
                 setVegOnly(false);
-                setActiveCategory(DEFAULT_CATEGORY);
+                setActiveCategory(menuCategories[0]?.id || "beverages");
               }}
               className="mt-5 rounded-full border border-primary/30 px-5 py-2 text-xs font-semibold uppercase tracking-wider text-primary transition-all duration-200 hover:bg-secondary/40 active:scale-95"
             >
@@ -344,17 +350,17 @@ export function MenuSection() {
         {/* Footer note & ordering link */}
         <div className="mt-16 border-t border-primary/20 pt-8 text-center sm:flex sm:items-center sm:justify-between">
           <p className="text-xs text-muted-foreground">
-            {cafe.menu.footerNote}
+            {cafe.menu?.footerNote || "Prices are inclusive of taxes."}
           </p>
-          {(cafe.orderOnline.enabled || demoConfig.enabled) && (
+          {(cafe.orderOnline?.enabled || demoConfig.enabled) && (
             <a
-              href={cafe.orderOnline.href}
+              href={cafe.orderOnline?.href || "#"}
               onClick={handleOrderClick}
               target="_blank"
               rel="noopener noreferrer"
               className="group mt-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary transition-colors hover:text-accent sm:mt-0"
             >
-              <span className="link-editorial">{demoConfig.enabled ? "Explore Ordering Demo" : "Proceed to Digital Ordering"}</span>
+              <span className="link-editorial">{demoConfig.enabled ? "Explore Ordering Demo" : (cafe.orderOnline?.label || "Digital Ordering")}</span>
               <ShoppingBag className="size-3.5 transition-transform duration-200 group-hover:scale-110" />
             </a>
           )}
@@ -380,15 +386,40 @@ function MenuGroupCard({ group }: { group: MenuGroup }) {
             <DietIndicator veg={item.veg} className="mt-1 shrink-0" />
             <div className="min-w-0 flex-1">
               <div className="flex items-baseline justify-between gap-2">
-                <span className="text-sm font-medium text-foreground">{item.name}</span>
+                <span className={cn(
+                  "text-sm font-medium text-foreground",
+                  item.available === false && "text-muted-foreground"
+                )}>
+                  {item.name}
+                </span>
                 <span
                   aria-hidden="true"
                   className="mx-2 hidden flex-1 translate-y-[-4px] border-b border-dotted border-primary/20 sm:block"
                 />
-                <span className="font-display text-sm font-semibold tabular-nums text-primary whitespace-nowrap">
-                  ₹{item.price}
-                </span>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {item.available === false && (
+                    <span className="rounded bg-coffee/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground border border-coffee/20">
+                      Unavailable
+                    </span>
+                  )}
+                  <span className={cn(
+                    "font-display text-sm font-semibold tabular-nums text-primary whitespace-nowrap",
+                    item.available === false && "text-muted-foreground line-through opacity-75"
+                  )}>
+                    ₹{item.price}
+                  </span>
+                </div>
               </div>
+              {item.imageUrl && (
+                <div className="mt-2 relative h-24 w-full sm:h-28 overflow-hidden rounded-lg border border-coffee/15 bg-cream-2/50">
+                  <img
+                    src={item.imageUrl}
+                    alt={item.imageAlt || item.name}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                  />
+                </div>
+              )}
               {item.description && (
                 <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                   {item.description}

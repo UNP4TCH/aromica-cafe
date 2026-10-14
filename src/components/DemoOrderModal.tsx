@@ -36,11 +36,11 @@ export function DemoOrderModal() {
       role="dialog"
       aria-modal="true"
       aria-labelledby="demo-order-modal-title"
-      className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-darkest/80 p-4 backdrop-blur-sm"
+      className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-darkest/80 p-3 sm:p-4 backdrop-blur-sm"
       onClick={() => setIsOpen(false)}
     >
       <div
-        className="animate-dialog-in relative w-full max-w-lg rounded-2xl border border-gold/30 bg-espresso p-6 sm:p-8 text-paper shadow-2xl"
+        className="animate-dialog-in relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-gold/30 bg-espresso p-5 sm:p-8 text-paper shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}

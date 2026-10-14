@@ -101,11 +101,7 @@ Set `enabled: false` in [`src/data/demoConfig.ts`](file:///d:/agency/cafe-aromic
 
 ---
 
-<<<<<<< HEAD
-## Key Refinements
-=======
 ## ✨ Key Refinements
->>>>>>> 28a4245 (Finalize Aromica Café portfolio demo)
 
 1. **Gallery Lightbox**:
    - Clicking any gallery item opens an accessible full-resolution viewer.
@@ -179,6 +175,14 @@ aromica-final/
 │   ├── App.tsx                   # Single-page layout assembly with ambient warmth layer
 │   ├── index.css                 # Color tokens, DM Serif Display, motion keyframes & cursor
 │   └── main.tsx                  # React 19 entry point
+├── apps/
+│   └── owner-dashboard/          # Café Owner Management Dashboard
+│       ├── src/
+│       │   ├── components/       # Menu management, hours, profile, media, and activity feed
+│       │   ├── App.tsx           # Dashboard workspace with simulation toggle & Supabase client integration
+│       │   └── main.tsx
+│       └── vite.config.ts
+├── supabase/                     # PostgreSQL database migrations, RLS policies, and seed data
 ├── index.html                    # SEO meta, preconnect fonts, and JSON-LD schema
 ├── package.json
 └── vite.config.ts
@@ -192,12 +196,29 @@ aromica-final/
 # Install dependencies
 npm install
 
-# Start development server
+# Start Public Café Website (Port 5173)
 npm run dev
 
-# Build production bundle
+# Start Owner Management Dashboard (Port 5174)
+npm run dev:dashboard
+
+# Run Automated Verification Suite
+npm run test
+
+# Run Static Analysis
+npm run lint
+
+# Build Public Website
 npm run build
 
-# Preview production build
-npm run preview
+# Build Owner Dashboard
+npm run build:dashboard
 ```
+
+---
+
+## 🔒 Demonstration vs. Cloud Database Integration
+
+- **Interactive Portfolio Simulation Mode**: The Owner Management Dashboard includes a zero-credential simulation mode enabling full menu editing, price updates, operating hour updates, media management, and activity logging purely in memory without requiring live cloud credentials.
+- **Live Supabase Integration**: The codebase includes complete Supabase authentication, Row Level Security policies, storage upload handling, and schema definitions ready for live deployment. Live cloud functionality remains pending until external Supabase infrastructure is provisioned.
+- **Creator Attribution**: Designed and developed by **Susmit Dey** (`+91 9007801474`, `susmitdey047@gmail.com`).

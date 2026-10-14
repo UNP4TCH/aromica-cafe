@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+:root {
+  --espresso: #241611;
+  --coffee: #3B2417;
+  --mocha: #5A3A24;
+  --caramel: #B0793F;
+  --gold: #D9A45B;
+  --cream: #F6EAD9;
+  --paper: #FBF4E8;
+  --darkest: #170D08;
+}
+
+body {
+  margin: 0;
+  font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--darkest);
+  color: var(--paper);
+}

@@ -11,8 +11,9 @@ import { DemoContactSection } from "./components/DemoContactSection";
 import { Footer } from "./components/Footer";
 import { MobileActionBar } from "./components/MobileActionBar";
 import { DemoOrderModal } from "./components/DemoOrderModal";
+import { PublicBusinessProvider } from "./context/PublicBusinessContext";
 
-export function App() {
+function MainAppLayout() {
   return (
     <div className="relative flex min-h-screen flex-col bg-background text-foreground antialiased selection:bg-accent/25">
       {/* Subtle Background Ambient Illumination Layer */}
@@ -61,6 +62,14 @@ export function App() {
       {/* 12. Demo Order Interception Modal (Accessible concept notice) */}
       <DemoOrderModal />
     </div>
+  );
+}
+
+export function App() {
+  return (
+    <PublicBusinessProvider tenantSlug="aromica-cafe">
+      <MainAppLayout />
+    </PublicBusinessProvider>
   );
 }
 

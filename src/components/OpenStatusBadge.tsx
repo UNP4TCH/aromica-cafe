@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { cafe, weeklySchedule } from "@/data/cafe";
+import type { DayHoursContract } from "@/types/business";
 
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const WEEKDAY_INDEX: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
@@ -19,7 +20,7 @@ interface StatusInfo {
   isClosingSoon?: boolean;
 }
 
-function calculateCurrentStatus(): StatusInfo {
+function calculateCurrentStatus(scheduleInput: DayHoursContract[] = weeklySchedule): StatusInfo {
   try {
     const parts = kolkataFormatter.formatToParts(new Date());
     const getVal = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
@@ -28,12 +29,12 @@ function calculateCurrentStatus(): StatusInfo {
     const minute = parseInt(getVal("minute"), 10) || 0;
     const currentMinutes = hour * 60 + minute;
 
-    const todaySchedule = weeklySchedule.find((s) => s.dayIndex === currentDay);
+    const todaySchedule = scheduleInput.find((s) => s.dayIndex === currentDay);
 
     const findNextOpenDay = (): { dayText: string; openDisplay: string } => {
       for (let offset = 1; offset <= 7; offset++) {
         const checkDay = (currentDay + offset) % 7;
-        const sched = weeklySchedule.find((s) => s.dayIndex === checkDay);
+        const sched = scheduleInput.find((s) => s.dayIndex === checkDay);
         if (sched && !sched.isClosed) {
           const dayText = offset === 1 ? "tomorrow" : (DAY_NAMES[checkDay] || "soon");
           const openDisplay = sched.openDisplay || "5:00 PM";
@@ -92,20 +93,24 @@ function calculateCurrentStatus(): StatusInfo {
 }
 
 export function OpenStatusBadge({
+  schedule,
   className,
   variant = "light",
 }: {
+  schedule?: DayHoursContract[];
   className?: string;
   variant?: "light" | "dark" | "pill";
 }) {
-  const [status, setStatus] = useState<StatusInfo>(calculateCurrentStatus);
+  const effectiveSchedule = schedule || weeklySchedule;
+  const [status, setStatus] = useState<StatusInfo>(() => calculateCurrentStatus(effectiveSchedule));
 
   useEffect(() => {
+    setStatus(calculateCurrentStatus(effectiveSchedule));
     const timer = setInterval(() => {
-      setStatus(calculateCurrentStatus());
+      setStatus(calculateCurrentStatus(effectiveSchedule));
     }, 30000);
     return () => clearInterval(timer);
-  }, []);
+  }, [effectiveSchedule]);
 
   if (variant === "pill") {
     return (

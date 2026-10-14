@@ -1,26 +1,27 @@
 import { useEffect, useState } from "react";
 import { Menu, ShoppingBag, X } from "lucide-react";
-import { cafe } from "@/data/cafe";
 import { demoConfig } from "@/data/demoConfig";
 import { openOrderDemoModal } from "@/lib/demoModal";
-
-const baseNavLinks = [
-  { href: "#menu", label: "Menu" },
-  { href: "#atmosphere", label: "Atmosphere" },
-  { href: "#gallery", label: "Gallery" },
-  { href: "#visit", label: "Visit Us" },
-  { href: cafe.instagram.href, label: "Instagram", external: true },
-];
-
-const navLinks = demoConfig.enabled
-  ? [
-      ...baseNavLinks,
-      { href: "#demo-contact", label: "Concept" },
-    ]
-  : baseNavLinks;
+import { useBusinessContent } from "@/context/PublicBusinessContext";
 
 export function Header() {
+  const { cafe } = useBusinessContent();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const baseNavLinks = [
+    { href: "#menu", label: "Menu" },
+    { href: "#atmosphere", label: "Atmosphere" },
+    { href: "#gallery", label: "Gallery" },
+    { href: "#visit", label: "Visit Us" },
+    { href: cafe.instagram?.href || "https://www.instagram.com/aromica_cafe_/", label: "Instagram", external: true },
+  ];
+
+  const navLinks = demoConfig.enabled
+    ? [
+        ...baseNavLinks,
+        { href: "#demo-contact", label: "Concept" },
+      ]
+    : baseNavLinks;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -93,17 +94,17 @@ export function Header() {
         </nav>
 
         {/* CTA Button */}
-        {(cafe.orderOnline.enabled || demoConfig.enabled) && (
+        {(cafe.orderOnline?.enabled || demoConfig.enabled) && (
           <div className="hidden items-center gap-4 md:flex">
             <a
-              href={cafe.orderOnline.href}
+              href={cafe.orderOnline?.href || "#"}
               onClick={handleOrderClick}
               target="_blank"
               rel="noopener noreferrer"
               className="group inline-flex min-h-[40px] items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-xs font-semibold tracking-wide uppercase text-paper shadow-sm transition-all duration-200 hover:bg-accent/90 hover:-translate-y-0.5 hover:shadow-paper active:translate-y-0 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
             >
               <ShoppingBag className="size-4 transition-transform duration-200 group-hover:scale-105" />
-              <span>{demoConfig.enabled ? "Order Online Demo" : cafe.orderOnline.label}</span>
+              <span>{demoConfig.enabled ? "Order Online Demo" : (cafe.orderOnline?.label || "Order Online")}</span>
             </a>
           </div>
         )}

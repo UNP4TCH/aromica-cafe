@@ -1,10 +1,11 @@
 import { ArrowRight, Compass, ShoppingBag } from "lucide-react";
-import { cafe } from "@/data/cafe";
 import { demoConfig } from "@/data/demoConfig";
 import { PhotoWatermark } from "@/components/PhotoWatermark";
 import { openOrderDemoModal } from "@/lib/demoModal";
+import { useBusinessContent } from "@/context/PublicBusinessContext";
 
 export function Hero() {
+  const { cafe } = useBusinessContent();
   const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
     const target = document.querySelector(href);
@@ -69,16 +70,18 @@ export function Hero() {
               <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
             </a>
 
-            <a
-              href={cafe.orderOnline.href}
-              onClick={handleOrderClick}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-paper shadow-sm transition-all duration-200 hover:bg-accent/90 hover:-translate-y-0.5 hover:shadow-paper active:translate-y-0 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-accent"
-            >
-              <ShoppingBag className="size-4 text-paper transition-transform duration-200 group-hover:scale-105" />
-              <span>Order Online</span>
-            </a>
+            {(cafe.orderOnline?.enabled || demoConfig.enabled) && (
+              <a
+                href={cafe.orderOnline?.href || "#"}
+                onClick={handleOrderClick}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-paper shadow-sm transition-all duration-200 hover:bg-accent/90 hover:-translate-y-0.5 hover:shadow-paper active:translate-y-0 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-accent"
+              >
+                <ShoppingBag className="size-4 text-paper transition-transform duration-200 group-hover:scale-105" />
+                <span>{demoConfig.enabled ? "Order Online Demo" : (cafe.orderOnline?.label || "Order Online")}</span>
+              </a>
+            )}
 
             <a
               href="#visit"
@@ -102,8 +105,8 @@ export function Hero() {
           {/* Arched editorial frame */}
           <div className="relative mx-auto aspect-[4/5] max-h-[620px] w-full max-w-[480px] overflow-hidden rounded-[42%_42%_2.5rem_2.5rem] border border-coffee/15 bg-card shadow-paper lg:max-w-none">
             <img
-              src={cafe.heroImage.src}
-              alt={cafe.heroImage.alt}
+              src={cafe.heroImage?.src || "/images/aromica-exterior-drinks-01.webp"}
+              alt={cafe.heroImage?.alt || "AROMICA Café storefront at night"}
               className="h-full w-full object-cover object-[24%_center] transition-transform duration-700 ease-out hover:scale-[1.025]"
               loading="eager"
               fetchPriority="high"

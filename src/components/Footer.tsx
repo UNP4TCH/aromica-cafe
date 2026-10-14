@@ -1,12 +1,13 @@
 import { Clock3, Mail, MapPin, MessageCircle, Phone, ShoppingBag, Sparkles } from "lucide-react";
-import { cafe } from "@/data/cafe";
 import { demoConfig } from "@/data/demoConfig";
 import { openOrderDemoModal } from "@/lib/demoModal";
 import { InstagramIcon } from "@/components/brand-icons";
+import { useBusinessContent } from "@/context/PublicBusinessContext";
 
 const CURRENT_YEAR = new Date().getFullYear();
 
 export function Footer() {
+  const { cafe } = useBusinessContent();
   const handleOrderClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (demoConfig.enabled && demoConfig.externalActions.demoMode) {
       e.preventDefault();

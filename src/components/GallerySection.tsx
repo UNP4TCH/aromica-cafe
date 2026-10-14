@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { cafe, galleryItems } from "@/data/cafe";
 import { InstagramIcon } from "@/components/brand-icons";
 import { PhotoWatermark } from "@/components/PhotoWatermark";
 import { cn } from "@/lib/utils";
 import { useScrollReveal } from "@/lib/useScrollReveal";
+import { useBusinessContent } from "@/context/PublicBusinessContext";
 
 export function GallerySection() {
+  const { cafe, galleryItems } = useBusinessContent();
   const { ref: headerRevealRef, isRevealed: isHeaderRevealed } = useScrollReveal();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const touchStartX = useRef<number | null>(null);
@@ -19,7 +20,7 @@ export function GallerySection() {
       const count = galleryItems.length;
       return (current + delta + count) % count;
     });
-  }, []);
+  }, [galleryItems]);
 
   // Lock background page scroll when lightbox is open
   useEffect(() => {

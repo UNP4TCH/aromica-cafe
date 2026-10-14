@@ -1,10 +1,11 @@
 import { ExternalLink, MessageSquareHeart } from "lucide-react";
-import { cafe } from "@/data/cafe";
 import { InstagramIcon } from "@/components/brand-icons";
 import { useScrollReveal } from "@/lib/useScrollReveal";
+import { useBusinessContent } from "@/context/PublicBusinessContext";
 
 export function SocialSection() {
   const { ref, isRevealed } = useScrollReveal();
+  const { cafe } = useBusinessContent();
 
   return (
     <section className="border-t border-coffee/15 bg-card/30 px-5 py-16 lg:px-8 lg:py-20">

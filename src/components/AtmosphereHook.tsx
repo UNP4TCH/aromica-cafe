@@ -1,9 +1,17 @@
-import { cafe } from "@/data/cafe";
 import { PhotoWatermark } from "@/components/PhotoWatermark";
 import { useScrollReveal } from "@/lib/useScrollReveal";
+import { useBusinessContent } from "@/context/PublicBusinessContext";
 
 export function AtmosphereHook() {
   const { ref, isRevealed } = useScrollReveal();
+  const { cafe } = useBusinessContent();
+
+  const eyebrow = cafe.atmosphere?.eyebrow || cafe.tagline || "Coffee · Chai · Comfort";
+  const title = cafe.atmosphere?.title || cafe.slogan || "Good Food, Good Mood";
+  const description = cafe.atmosphere?.description || cafe.description;
+  const imageSrc = cafe.atmosphere?.image?.src || "/images/aromica-interior-01.webp";
+  const imageAlt = cafe.atmosphere?.image?.alt || "Inside Aromica Café";
+  const imageBadge = cafe.atmosphere?.image?.badge || "Inside Aromica · Boral";
 
   return (
     <section
@@ -25,14 +33,14 @@ export function AtmosphereHook() {
               }`}
             >
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-caramel">
-                {cafe.atmosphere.eyebrow}
+                {eyebrow}
               </p>
               <h2 className="mt-3 font-display text-2xl italic text-coffee sm:text-3xl lg:text-4xl">
-                {cafe.atmosphere.title}
+                {title}
               </h2>
               <div className="mt-4 h-px w-12 bg-caramel/50" aria-hidden="true" />
               <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                {cafe.atmosphere.description}
+                {description}
               </p>
             </div>
 
@@ -44,8 +52,8 @@ export function AtmosphereHook() {
             >
               <div className="group relative aspect-[16/10] w-full overflow-hidden rounded-xl border border-coffee/20 bg-espresso/5 shadow-inner sm:aspect-[16/9]">
                 <img
-                  src={cafe.atmosphere.image.src}
-                  alt={cafe.atmosphere.image.alt}
+                  src={imageSrc}
+                  alt={imageAlt}
                   className="h-full w-full object-cover object-center transition-transform duration-700 md:group-hover:scale-[1.025]"
                   loading="lazy"
                 />
@@ -56,7 +64,7 @@ export function AtmosphereHook() {
                 />
                 <PhotoWatermark className="bottom-3 left-3" />
                 <span className="absolute bottom-3 right-3 rounded-full border border-gold/30 bg-darkest/75 px-3 py-1 text-[11px] font-medium tracking-wide text-cream backdrop-blur-xs transition-transform duration-300 group-hover:-translate-y-0.5">
-                  {cafe.atmosphere.image.badge}
+                  {imageBadge}
                 </span>
               </div>
             </div>

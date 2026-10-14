@@ -1,12 +1,13 @@
 import { Clock, Compass, ExternalLink, Mail, MapPin, MessageCircle, Navigation, Phone, Sparkles } from "lucide-react";
-import { cafe, weeklySchedule } from "@/data/cafe";
 import { demoConfig } from "@/data/demoConfig";
 import { PhotoWatermark } from "@/components/PhotoWatermark";
 import { OpenStatusBadge } from "./OpenStatusBadge";
 import { useScrollReveal } from "@/lib/useScrollReveal";
+import { useBusinessContent } from "@/context/PublicBusinessContext";
 
 export function VisitSection() {
   const { ref: headerRevealRef, isRevealed: isHeaderRevealed } = useScrollReveal();
+  const { cafe, schedule } = useBusinessContent();
 
   return (
     <section id="visit" aria-labelledby="visit-title" className="scroll-mt-18 border-t border-primary/20 bg-background py-20 lg:py-28">
@@ -45,10 +46,10 @@ export function VisitSection() {
             <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-primary/15 bg-card/60 p-4">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Compass className="size-4 text-accent" />
-                <span>GPS: {cafe.coordinates.lat}, {cafe.coordinates.lng}</span>
+                <span>GPS: {cafe.coordinates?.lat ?? "22.4543"}, {cafe.coordinates?.lng ?? "88.3758"}</span>
               </div>
               <a
-                href={cafe.directions.href}
+                href={cafe.directions?.href || "#"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group inline-flex min-h-[44px] items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary transition-colors hover:text-accent"
@@ -70,14 +71,14 @@ export function VisitSection() {
 
               <address className="mt-4 not-italic text-sm leading-relaxed text-foreground/90">
                 <strong className="block font-semibold text-primary">{cafe.name}</strong>
-                {cafe.address.street},<br />
-                {cafe.address.locality},<br />
-                {cafe.address.cityRegion},<br />
-                {cafe.address.statePostal}
+                {cafe.address?.street},<br />
+                {cafe.address?.locality},<br />
+                {cafe.address?.cityRegion},<br />
+                {cafe.address?.statePostal}
               </address>
 
               <div className="mt-4 flex flex-wrap gap-2">
-                {cafe.landmarks.map((landmark) => (
+                {(cafe.landmarks || []).map((landmark) => (
                   <span
                     key={landmark}
                     className="rounded-full border border-coffee/15 bg-cream-2/60 px-3 py-1 text-[11px] font-medium text-coffee"
@@ -102,7 +103,7 @@ export function VisitSection() {
               </div>
 
               <a
-                href={cafe.directions.href}
+                href={cafe.directions?.href || "#"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group mt-6 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full bg-accent px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-paper shadow-sm transition-all duration-200 hover:bg-accent/90 hover:-translate-y-0.5 hover:shadow-paper active:translate-y-0 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-accent"
@@ -130,11 +131,11 @@ export function VisitSection() {
                 <Clock className="size-5 text-caramel" />
                 <h3 className="font-display text-xl text-coffee">Opening Hours</h3>
               </div>
-              <OpenStatusBadge variant="pill" className="self-start sm:self-auto" />
+              <OpenStatusBadge schedule={schedule} variant="pill" className="self-start sm:self-auto" />
             </div>
 
             <dl className="mt-4 divide-y divide-coffee/10 text-xs">
-              {weeklySchedule.map((item) => (
+              {(schedule || []).map((item) => (
                 <div key={item.day} className="flex items-center justify-between py-2.5">
                   <dt className="font-medium text-foreground">{item.day}</dt>
                   <dd
