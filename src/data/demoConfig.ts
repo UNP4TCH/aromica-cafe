@@ -17,7 +17,7 @@ export interface DemoCapability {
 export interface DemoConfig {
   enabled: boolean;
   owner: DemoContact;
-  secondaryContact: DemoContact;
+  secondaryContact?: DemoContact;
   attribution: {
     label: string;
     owner: string;
@@ -60,18 +60,6 @@ export const demoConfig: DemoConfig = {
     emailHref: "mailto:susmitdey047@gmail.com",
     whatsappHref:
       "https://wa.me/919007801474?text=Hi%20Susmit%2C%20I%20saw%20your%20Aromica%20Caf%C3%A9%20website%20concept%20and%20would%20like%20to%20discuss%20a%20website%20for%20my%20business.",
-  },
-
-  secondaryContact: {
-    name: "Sohom Das",
-    role: "Client Relations & Strategy",
-    phone: "+91 8100249618",
-    phoneRaw: "918100249618",
-    phoneHref: "tel:+918100249618",
-    email: "sohomdas62@gmail.com",
-    emailHref: "mailto:sohomdas62@gmail.com",
-    whatsappHref:
-      "https://wa.me/918100249618?text=Hi%20Sohom%2C%20I%20saw%20your%20Aromica%20Caf%C3%A9%20website%20concept%20and%20would%20like%20to%20discuss%20a%20website.",
   },
 
   attribution: {

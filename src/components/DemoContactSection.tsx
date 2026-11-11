@@ -155,47 +155,49 @@ export function DemoContactSection() {
                 </div>
               </div>
 
-              {/* Secondary Contact: Sohom Das */}
-              <div className="rounded-2xl border border-paper/15 bg-espresso/80 p-4 sm:p-5 shadow-xs">
-                <div className="flex items-center justify-between">
-                  <span className="rounded bg-paper/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-paper/70">
-                    Secondary Contact
-                  </span>
-                  <span className="text-[11px] text-paper/50">{demoConfig.secondaryContact.role}</span>
+              {/* Optional Secondary Contact */}
+              {demoConfig.secondaryContact && (
+                <div className="rounded-2xl border border-paper/15 bg-espresso/80 p-4 sm:p-5 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="rounded bg-paper/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-paper/70">
+                      Secondary Contact
+                    </span>
+                    <span className="text-[11px] text-paper/50">{demoConfig.secondaryContact.role}</span>
+                  </div>
+
+                  <h4 className="mt-2 font-display text-lg text-paper">
+                    {demoConfig.secondaryContact.name}
+                  </h4>
+
+                  <div className="mt-3 flex flex-col gap-2 text-xs">
+                    <a
+                      href={demoConfig.secondaryContact.phoneHref}
+                      className="inline-flex items-center gap-2 font-medium text-paper/90 transition-colors hover:text-gold hover:underline"
+                    >
+                      <Phone className="size-3.5 text-caramel" />
+                      <span>{demoConfig.secondaryContact.phone}</span>
+                    </a>
+
+                    <a
+                      href={demoConfig.secondaryContact.whatsappHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 font-semibold text-wa hover:underline"
+                    >
+                      <MessageCircle className="size-3.5 text-wa" />
+                      <span>WhatsApp Chat</span>
+                    </a>
+
+                    <a
+                      href={demoConfig.secondaryContact.emailHref}
+                      className="inline-flex items-center gap-2 text-paper/80 transition-colors hover:text-gold hover:underline truncate"
+                    >
+                      <Mail className="size-3.5 text-caramel" />
+                      <span className="truncate">{demoConfig.secondaryContact.email}</span>
+                    </a>
+                  </div>
                 </div>
-
-                <h4 className="mt-2 font-display text-lg text-paper">
-                  {demoConfig.secondaryContact.name}
-                </h4>
-
-                <div className="mt-3 flex flex-col gap-2 text-xs">
-                  <a
-                    href={demoConfig.secondaryContact.phoneHref}
-                    className="inline-flex items-center gap-2 font-medium text-paper/90 transition-colors hover:text-gold hover:underline"
-                  >
-                    <Phone className="size-3.5 text-caramel" />
-                    <span>{demoConfig.secondaryContact.phone}</span>
-                  </a>
-
-                  <a
-                    href={demoConfig.secondaryContact.whatsappHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 font-semibold text-wa hover:underline"
-                  >
-                    <MessageCircle className="size-3.5 text-wa" />
-                    <span>WhatsApp Chat</span>
-                  </a>
-
-                  <a
-                    href={demoConfig.secondaryContact.emailHref}
-                    className="inline-flex items-center gap-2 text-paper/80 transition-colors hover:text-gold hover:underline truncate"
-                  >
-                    <Mail className="size-3.5 text-caramel" />
-                    <span className="truncate">{demoConfig.secondaryContact.email}</span>
-                  </a>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

@@ -111,15 +111,24 @@ export function DemoOrderModal() {
           </div>
         </div>
 
-        {/* Secondary Contact Info */}
+        {/* Creator / Inquiry Info */}
         <div className="mt-4 flex items-center justify-between border-t border-paper/10 pt-3 text-[11px] text-paper/50">
           <span>Demo by {demoConfig.owner.name}</span>
-          <a
-            href={demoConfig.secondaryContact.phoneHref}
-            className="text-paper/70 hover:text-gold hover:underline"
-          >
-            Secondary: {demoConfig.secondaryContact.name} ({demoConfig.secondaryContact.phone})
-          </a>
+          {demoConfig.secondaryContact ? (
+            <a
+              href={demoConfig.secondaryContact.phoneHref}
+              className="text-paper/70 hover:text-gold hover:underline"
+            >
+              Secondary: {demoConfig.secondaryContact.name} ({demoConfig.secondaryContact.phone})
+            </a>
+          ) : (
+            <a
+              href={demoConfig.owner.phoneHref}
+              className="text-paper/70 hover:text-gold hover:underline"
+            >
+              {demoConfig.owner.phone}
+            </a>
+          )}
         </div>
       </div>
     </div>
